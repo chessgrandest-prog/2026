@@ -1,0 +1,101 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Brotato</title>
+    <style>
+      body {
+        margin: 0;
+        background: #000;
+        color: #fff;
+        font-family: sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        overflow: hidden;
+      }
+      #canvas {
+        display: none;
+        width: 100vw;
+        height: 100vh;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas"></canvas>
+    <div id="loading">(loading files)</div>
+    <script src="https://cdn.jsdelivr.net/gh/shxyder/inital@main/Brotato.js"></script>
+    <script>
+      const REPO = "https://cdn.jsdelivr.net/gh/shxyder/inital@main/";
+      const PCK_P = Array.from(
+        { length: 10 },
+        (_, i) => `Brotato.pck.part${(i + 1).toString().padStart(2, "0")}`,
+      );
+      const WASM_P = ["Brotato.wasm.part1", "Brotato.wasm.part2"];
+      let _p = null,
+        _w = null;
+      const _f = window.fetch;
+      window.fetch = (i, n) => {
+        const u = typeof i === "string" ? i : i.url;
+        if (u.endsWith("Brotato.wasm") && !u.includes(".part"))
+          return Promise.resolve(
+            new Response(_w, {
+              status: 200,
+              headers: { "Content-Type": "application/wasm" },
+            }),
+          );
+        if (u.endsWith("Brotato.pck") && !u.includes(".part"))
+          return Promise.resolve(
+            new Response(_p, {
+              status: 200,
+              headers: { "Content-Type": "application/octet-stream" },
+            }),
+          );
+        return _f.apply(window, [i, n]);
+      };
+      async function init() {
+        console.log("*game init*");
+        try {
+          const pc = [];
+          for (const p of PCK_P) {
+            const r = await _f(REPO + p);
+            pc.push(await r.arrayBuffer());
+          }
+          _p = new Blob(pc);
+          const wc = [];
+          for (const p of WASM_P) {
+            const r = await _f(REPO + p);
+            wc.push(await r.arrayBuffer());
+          }
+          const t = wc.reduce((a, v) => a + v.byteLength, 0),
+            m = new Uint8Array(t);
+          let o = 0;
+          for (const c of wc) {
+            m.set(new Uint8Array(c), o);
+            o += c.byteLength;
+          }
+          _w = m.buffer;
+          new Engine({
+            args: [],
+            canvasResizePolicy: 2,
+            executable: "Brotato",
+            fileSizes: {
+              "Brotato.pck": _p.size,
+              "Brotato.wasm": _w.byteLength,
+            },
+            mainPack: "Brotato.pck",
+            wasmBinaryFile: "Brotato.wasm",
+            focusCanvas: true,
+          })
+            .startGame()
+            .then(() => {
+              document.getElementById("loading").style.display = "none";
+              document.getElementById("canvas").style.display = "block";
+            });
+        } catch (e) {}
+      }
+      if (typeof Engine !== "undefined") init();
+    </script>
+  </body>
+</html>
