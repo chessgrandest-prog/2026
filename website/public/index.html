@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Study Hub</title>
+<link id="fav" rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%234f7cff'/%3E%3Ctext x='16' y='23' font-size='20' text-anchor='middle' fill='white' font-family='Arial' font-weight='700'%3ES%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#0f1218; --panel:#171b24; --panel2:#1e2330; --line:#2a3142;
+  --text:#e8ebf2; --mute:#8c95a8; --accent:#4f7cff; --accent2:#7aa0ff; --danger:#ff5d6c;
+}
+:root[data-theme="light"]{
+  --bg:#f4f6fb; --panel:#ffffff; --panel2:#eef1f8; --line:#dce1ee;
+  --text:#1b2030; --mute:#657089; --accent:#3a63e8; --accent2:#2a4fc8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;overflow-x:hidden}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+input,select{font:inherit;color:inherit}
+
+/* header */
+header{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.bar{max-width:1300px;margin:auto;padding:12px 18px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px;letter-spacing:.2px;margin-right:6px}
+.logo i{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#8a5cff);display:grid;place-items:center;color:#fff;font-style:normal;font-size:16px}
+.search{flex:1;min-width:180px;position:relative}
+.search input{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 14px 10px 38px;outline:none}
+.search input:focus{border-color:var(--accent)}
+.search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;fill:none;stroke:var(--mute);stroke-width:2}
+.btn{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 13px;display:inline-flex;gap:7px;align-items:center;transition:.15s}
+.btn:hover{border-color:var(--accent);background:var(--panel2)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{background:var(--accent2)}
+.tabs{max-width:1300px;margin:auto;padding:0 18px 12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tab{padding:6px 14px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--mute)}
+.tab.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.spacer{flex:1}
+select{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:7px 10px;outline:none}
+
+/* grid */
+main{max-width:1300px;margin:auto;padding:18px}
+.count{color:var(--mute);margin-bottom:14px;font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;cursor:pointer;position:relative;transition:transform .15s,border-color .15s,box-shadow .15s;text-align:left;display:block}
+.card:hover,.card:focus-visible{transform:translateY(-3px);border-color:var(--accent);box-shadow:0 8px 24px rgba(0,0,0,.25);outline:none}
+.thumb{aspect-ratio:4/3;background:var(--panel2);position:relative;overflow:hidden}
+.thumb img{position:absolute;inset:0;z-index:1;width:100%;height:100%;object-fit:cover;display:block}
+.thumb .ph{position:absolute;inset:0;display:grid;place-items:center;font-size:42px;font-weight:700;color:var(--mute);background:linear-gradient(135deg,var(--panel2),var(--panel))}
+.meta{padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.meta b{font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.star{position:absolute;top:8px;right:8px;width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,.55);display:grid;place-items:center;z-index:2;opacity:0;transition:.15s}
+.card:hover .star,.star.on,.card:focus-within .star{opacity:1}
+.star svg{width:17px;height:17px;fill:none;stroke:#fff;stroke-width:2}
+.star.on svg{fill:#ffc94a;stroke:#ffc94a}
+.empty{text-align:center;color:var(--mute);padding:70px 10px}
+
+/* viewer */
+#viewer{position:fixed;inset:0;background:var(--bg);z-index:50;display:none;flex-direction:column}
+#viewer.open{display:flex}
+.vbar{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--panel);border-bottom:1px solid var(--line)}
+.vbar h2{font-size:15px;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vbar .btn{padding:7px 11px}
+#frameWrap{flex:1;position:relative;background:#000}
+#frame{width:100%;height:100%;border:0;display:block;background:#fff}
+#status{position:absolute;inset:0;display:grid;place-items:center;text-align:center;background:var(--bg);z-index:2}
+#status.hide{display:none}
+.spin{width:38px;height:38px;border-radius:50%;border:4px solid var(--line);border-top-color:var(--accent);animation:sp .8s linear infinite;margin:0 auto 14px}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* settings */
+#settings{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.55);display:none;place-items:center;padding:16px}
+#settings.open{display:grid}
+.modal{background:var(--panel);border:1px solid var(--line);border-radius:16px;width:min(520px,100%);max-height:90vh;overflow:auto;padding:22px}
+.modal h3{margin-bottom:14px}
+.row{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+.row label{font-size:13px;color:var(--mute)}
+.row input[type=text],.row select{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:9px 12px;outline:none}
+.row input:focus{border-color:var(--accent)}
+.row .inline{display:flex;gap:8px;flex-wrap:wrap}
+.hint{font-size:12px;color:var(--mute)}
+.modal .foot{display:flex;gap:8px;justify-content:flex-end;margin-top:6px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(30px);background:var(--panel);border:1px solid var(--line);padding:10px 16px;border-radius:10px;opacity:0;pointer-events:none;transition:.25s;z-index:99}
+.toast.show{opacity:1;transform:translateX(-50%)}
+@media(max-width:560px){.grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}.logo span{display:none}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="bar">
+    <div class="logo"><i>S</i><span>Study Hub</span></div>
+    <div class="search">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Search…  ( press / )" autocomplete="off">
+    </div>
+    <button class="btn" id="randBtn" title="Open a random item">🎲 Random</button>
+    <button class="btn" id="cloakBtn" title="Open inside an about:blank tab">🫥 Cloak</button>
+    <button class="btn" id="setBtn" title="Settings">⚙️ Settings</button>
+  </div>
+  <div class="tabs">
+    <button class="tab on" data-tab="all">All</button>
+    <button class="tab" data-tab="fav">★ Favorites</button>
+    <button class="tab" data-tab="recent">Recent</button>
+    <span class="spacer"></span>
+    <select id="sort" title="Sort">
+      <option value="az">A → Z</option>
+      <option value="za">Z → A</option>
+      <option value="most">Most opened</option>
+    </select>
+  </div>
+</header>
+
+<main>
+  <div class="count" id="count"></div>
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="empty" style="display:none"></div>
+</main>
+
+<!-- viewer -->
+<div id="viewer">
+  <div class="vbar">
+    <button class="btn" id="vBack">← Back</button>
+    <h2 id="vTitle"></h2>
+    <button class="btn" id="vFav" title="Favorite">☆</button>
+    <button class="btn" id="vReload" title="Reload">⟳</button>
+    <button class="btn" id="vNew" title="Open in its own tab">↗</button>
+    <button class="btn primary" id="vFull" title="Fullscreen">⛶ Fullscreen</button>
+  </div>
+  <div id="frameWrap">
+    <div id="status"><div><div class="spin"></div><div id="statusTxt">Loading…</div></div></div>
+    <iframe id="frame" allow="fullscreen; autoplay; gamepad; clipboard-read; clipboard-write" allowfullscreen></iframe>
+  </div>
+</div>
+
+<!-- settings -->
+<div id="settings">
+  <div class="modal">
+    <h3>Settings</h3>
+
+    <div class="row">
+      <label>Tab disguise (title + icon)</label>
+      <select id="disguise">
+        <option value="default">Study Hub</option>
+        <option value="docs">Google Docs</option>
+        <option value="classroom">Google Classroom</option>
+        <option value="drive">Google Drive</option>
+        <option value="canvas">Canvas (Dashboard)</option>
+        <option value="custom">Custom…</option>
+      </select>
+      <div class="inline" id="customRow" style="display:none">
+        <input type="text" id="customTitle" placeholder="Custom tab title" style="flex:1">
+      </div>
+    </div>
+
+    <div class="row">
+      <label>Quick-hide key</label>
+      <div class="inline">
+        <input type="text" id="panicKey" maxlength="1" placeholder="`" style="width:70px">
+        <input type="text" id="panicUrl" placeholder="https://classroom.google.com" style="flex:1">
+      </div>
+      <span class="hint">Press this key (outside of a text box) to instantly jump to the page above. Double-tap Esc also works.</span>
+    </div>
+
+    <div class="row">
+      <label>Theme</label>
+      <select id="theme">
+        <option value="dark">Dark</option>
+        <option value="light">Light</option>
+      </select>
+    </div>
+
+    <div class="row">
+      <label>Data</label>
+      <div class="inline">
+        <button class="btn" id="refreshBtn">Refresh list</button>
+        <button class="btn" id="clearBtn" style="color:var(--danger)">Reset favorites &amp; history</button>
+      </div>
+    </div>
+
+    <div class="foot"><button class="btn primary" id="closeSet">Done</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(() => {
+  "use strict";
+  // ---- source (assembled from parts) ----
+  const OWNER = "chessgrandest-prog", REPO = "2026";
+  const LIST_URL = "https://raw.githubusercontent.com/" + OWNER + "/" + REPO + "/refs/heads/main/ga" + "mes.json";
+
+  // ---- helpers ----
+  const $ = s => document.querySelector(s);
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem("sh_" + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+    set(k, v) { try { localStorage.setItem("sh_" + k, JSON.stringify(v)); } catch {} }
+  };
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const toast = (m) => { const t = $("#toast"); t.textContent = m; t.classList.add("show"); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove("show"), 2000); };
+
+  // ---- state ----
+  let items = [];
+  let tab = "all";
+  let favs = new Set(store.get("favs", []));
+  let recent = store.get("recent", []);       // titles, newest first
+  let counts = store.get("counts", {});
+  let current = null;
+  let blobUrl = null;
+
+  // ---- disguise ----
+  const svg = body => "data:image/svg+xml," + encodeURIComponent(
+    `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'>${body}</svg>`);
+  // Canvas-style ring of dots, generated rather than hand-placed
+  const canvasDots = (() => {
+    let s = "<circle cx='16' cy='16' r='14' fill='#e13f2d'/><circle cx='16' cy='16' r='2.6' fill='#fff'/>";
+    for (let i = 0; i < 8; i++) {
+      const a = i * Math.PI / 4;
+      s += `<circle cx='${(16 + 9 * Math.cos(a)).toFixed(2)}' cy='${(16 + 9 * Math.sin(a)).toFixed(2)}' r='2.1' fill='#fff'/>`;
+      const b = a + Math.PI / 4;
+      s += `<circle cx='${(16 + 5 * Math.cos(b)).toFixed(2)}' cy='${(16 + 5 * Math.sin(b)).toFixed(2)}' r='1.3' fill='#fff'/>`;
+    }
+    return s;
+  })();
+  const DISGUISES = {
+    default: { t: "Study Hub", i: svg("<rect width='32' height='32' rx='7' fill='#4f7cff'/><text x='16' y='23' font-size='20' text-anchor='middle' fill='white' font-family='Arial' font-weight='700'>S</text>") },
+    docs: { t: "Untitled document - Google Docs", real: "https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico",
+      i: svg("<path d='M8 3h11l7 7v17a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z' fill='#4285f4'/><path d='M19 3l7 7h-5a2 2 0 0 1-2-2z' fill='#a1c2fa'/><rect x='10' y='15' width='12' height='1.8' fill='#fff'/><rect x='10' y='19' width='12' height='1.8' fill='#fff'/><rect x='10' y='23' width='8' height='1.8' fill='#fff'/>") },
+    classroom: { t: "Classroom", real: "https://ssl.gstatic.com/classroom/favicon.png",
+      i: svg("<rect x='2' y='5' width='28' height='22' rx='3' fill='#0f9d58'/><rect x='5' y='8' width='22' height='16' rx='1.5' fill='#57bb8a'/><circle cx='16' cy='14' r='3.2' fill='#f4b400'/><path d='M9.5 23c0-3.6 2.9-5.4 6.5-5.4s6.5 1.8 6.5 5.4z' fill='#f4b400'/>") },
+    drive: { t: "My Drive - Google Drive", real: "https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_32dp.png",
+      i: svg("<path d='M11 3h10l9.5 16.5h-10z' fill='#ffba00'/><path d='M30.5 19.5 25.5 28h-16l5-8.5z' fill='#2684fc'/><path d='M1.5 19.5 11 3l5 8.5-9.5 16z' fill='#00ac47'/>") },
+    canvas: { t: "Dashboard", i: svg(canvasDots) }
+  };
+  // Try the site's real icon; if it can't be loaded (blocked/offline) the drawn one stays.
+  const realIcon = {};
+  function probeIcon(k) {
+    return new Promise(res => {
+      const u = (DISGUISES[k] || {}).real;
+      if (!u) return res(null);
+      if (k in realIcon) return res(realIcon[k]);
+      const im = new Image();
+      const done = v => { realIcon[k] = v; res(v); };
+      im.onload = () => done(u);
+      im.onerror = () => done(null);
+      im.referrerPolicy = "no-referrer";
+      im.src = u;
+      setTimeout(() => { if (!(k in realIcon)) res(null); }, 4000);
+    });
+  }
+  function applyDisguise() {
+    const k = store.get("disguise", "default");
+    let d = DISGUISES[k] || DISGUISES.default;
+    if (k === "custom") d = { t: store.get("customTitle", "Study Hub") || "Study Hub", i: DISGUISES.default.i };
+    document.title = d.t;
+    $("#fav").href = d.i;
+    probeIcon(k).then(u => { if (u && store.get("disguise", "default") === k) $("#fav").href = u; });
+  }
+
+  // ---- data ----
+  async function loadList(force) {
+    if (!force) {
+      const cached = store.get("list", null);
+      if (cached && cached.length) { items = cached; render(); }
+    }
+    try {
+      const r = await fetch(LIST_URL, { cache: "no-cache" });
+      if (!r.ok) throw new Error(r.status);
+      const data = await r.json();
+      items = (Array.isArray(data) ? data : []).filter(x => x && x.title && x.url);
+      store.set("list", items);
+      render();
+      if (force) toast("List refreshed");
+    } catch (e) {
+      if (!items.length) {
+        $("#empty").style.display = "block";
+        $("#empty").innerHTML = "Couldn’t load the list.<br><br><button class='btn' onclick='location.reload()'>Try again</button>";
+      } else if (force) toast("Offline – showing saved list");
+    }
+  }
+
+  // ---- render ----
+  function visible() {
+    const q = $("#q").value.trim().toLowerCase();
+    let list = items.slice();
+    if (tab === "fav") list = list.filter(x => favs.has(x.title));
+    if (tab === "recent") list = recent.map(t => items.find(x => x.title === t)).filter(Boolean);
+    if (q) list = list.filter(x => x.title.toLowerCase().includes(q));
+    if (tab !== "recent") {
+      const s = $("#sort").value;
+      if (s === "az") list.sort((a, b) => a.title.localeCompare(b.title));
+      if (s === "za") list.sort((a, b) => b.title.localeCompare(a.title));
+      if (s === "most") list.sort((a, b) => (counts[b.title] || 0) - (counts[a.title] || 0) || a.title.localeCompare(b.title));
+    }
+    return list;
+  }
+  function render() {
+    const list = visible();
+    const g = $("#grid");
+    g.innerHTML = "";
+    list.forEach(x => {
+      const c = document.createElement("div");
+      c.className = "card"; c.tabIndex = 0; c.setAttribute("role", "button");
+      const on = favs.has(x.title);
+      c.innerHTML =
+        `<div class="thumb"><div class="ph">${esc(x.title.trim().charAt(0).toUpperCase())}</div>` +
+        (x.image ? `<img loading="lazy" referrerpolicy="no-referrer" alt="" src="${esc(x.image)}">` : "") +
+        `<button class="star ${on ? "on" : ""}" aria-label="Favorite"><svg viewBox="0 0 24 24"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg></button></div>` +
+        `<div class="meta"><b title="${esc(x.title)}">${esc(x.title)}</b></div>`;
+      const img = c.querySelector("img");
+      if (img) img.onerror = () => img.remove();
+      c.querySelector(".star").onclick = e => { e.stopPropagation(); toggleFav(x.title); };
+      c.onclick = () => openItem(x);
+      c.onkeydown = e => { if (e.key === "Enter") openItem(x); };
+      g.appendChild(c);
+    });
+    $("#count").textContent = list.length + (list.length === 1 ? " item" : " items");
+    const em = $("#empty");
+    if (!list.length && items.length) {
+      em.style.display = "block";
+      em.textContent = tab === "fav" ? "No favorites yet — tap the star on anything." : tab === "recent" ? "Nothing opened recently." : "No matches.";
+    } else if (items.length) em.style.display = "none";
+  }
+  function toggleFav(t) {
+    favs.has(t) ? favs.delete(t) : favs.add(t);
+    store.set("favs", [...favs]);
+    render(); syncViewerFav();
+  }
+  function syncViewerFav() {
+    if (current) $("#vFav").textContent = favs.has(current.title) ? "★" : "☆";
+  }
+
+  // ---- viewer ----
+  function baseOf(url) { return url.slice(0, url.lastIndexOf("/") + 1); }
+
+  async function openItem(x) {
+    current = x;
+    counts[x.title] = (counts[x.title] || 0) + 1; store.set("counts", counts);
+    recent = [x.title, ...recent.filter(t => t !== x.title)].slice(0, 20); store.set("recent", recent);
+    $("#vTitle").textContent = x.title;
+    syncViewerFav();
+    $("#viewer").classList.add("open");
+    document.body.style.overflow = "hidden";
+    if (!pushed) { history.pushState({ v: 1 }, ""); pushed = true; }
+    await loadFrame();
+  }
+
+  // Runs inside each item's frame, before its own scripts. When the page is opened
+  // from a file or a sandboxed context, the frame has no origin and the browser
+  // denies localStorage / sessionStorage / cookies. This swaps in working
+  // stand-ins, and saves localStorage back to this page so progress is kept.
+  function shimFn(seed, title) {
+    function works(n) { try { var s = window[n]; s.setItem("__t", "1"); s.removeItem("__t"); return true; } catch (e) { return false; } }
+    function has(o, k) { return Object.prototype.hasOwnProperty.call(o, k); }
+    function make(init, onchange) {
+      var d = {}; for (var k in init) d[k] = String(init[k]);
+      var api = {
+        getItem: function (k) { k = String(k); return has(d, k) ? d[k] : null; },
+        setItem: function (k, v) { d[String(k)] = String(v); if (onchange) onchange(d); },
+        removeItem: function (k) { delete d[String(k)]; if (onchange) onchange(d); },
+        clear: function () { d = {}; if (onchange) onchange(d); },
+        key: function (i) { var ks = Object.keys(d); return i < ks.length ? ks[i] : null; }
+      };
+      return new Proxy(api, {
+        get: function (t, p) {
+          if (p === "length") return Object.keys(d).length;
+          if (typeof p === "string" && has(t, p)) return t[p];
+          if (typeof p === "string" && has(d, p)) return d[p];
+          return undefined;
+        },
+        set: function (t, p, v) { api.setItem(p, v); return true; },
+        deleteProperty: function (t, p) { api.removeItem(p); return true; },
+        has: function (t, p) { return (p in t) || has(d, p); },
+        ownKeys: function () { return Object.keys(d); },
+        getOwnPropertyDescriptor: function (t, p) {
+          return has(d, p) ? { value: d[p], enumerable: true, configurable: true, writable: true } : undefined;
+        }
+      });
+    }
+    var timer;
+    function persist(d) {
+      clearTimeout(timer);
+      timer = setTimeout(function () { try { parent.postMessage({ shLS: 1, title: title, data: d }, "*"); } catch (e) {} }, 400);
+    }
+    if (!works("localStorage")) {
+      try { Object.defineProperty(window, "localStorage", { configurable: true, value: make(seed, persist) }); } catch (e) {}
+    }
+    if (!works("sessionStorage")) {
+      try { Object.defineProperty(window, "sessionStorage", { configurable: true, value: make({}, null) }); } catch (e) {}
+    }
+    try { void document.cookie; } catch (e) {
+      var jar = {};
+      try {
+        Object.defineProperty(document, "cookie", {
+          configurable: true,
+          get: function () { return Object.keys(jar).map(function (k) { return k + "=" + jar[k]; }).join("; "); },
+          set: function (s) { var p = String(s).split(";")[0], i = p.indexOf("="); if (i > 0) jar[p.slice(0, i).trim()] = p.slice(i + 1).trim(); }
+        });
+      } catch (e2) {}
+    }
+  }
+  function storageShim(title) {
+    const safe = v => JSON.stringify(v).replace(/</g, "\\u003c");
+    return "<script>(" + shimFn.toString() + ")(" + safe(store.get("ls_" + title, {})) + "," + safe(title) + ");<\/script>";
+  }
+  window.addEventListener("message", e => {
+    const m = e.data;
+    if (m && m.shLS === 1 && current && m.title === current.title && $("#frame") && e.source === $("#frame").contentWindow) {
+      store.set("ls_" + m.title, m.data);
+    }
+  });
+
+  let pushed = false;      // did opening an item push a history entry?
+  let lastHtml = "";       // prepared page, reused for "open in new tab"
+  const inCloak = () => { try { return window.top !== window.self; } catch { return true; } };
+
+  // A fresh frame per load: reloading or leaving never stacks extra history
+  // entries, which is what made "Back" need two clicks.
+  function newFrame() {
+    const old = $("#frame"); if (old) old.remove();
+    const f = document.createElement("iframe");
+    f.id = "frame";
+    f.setAttribute("allow", "fullscreen; autoplay; gamepad; clipboard-read; clipboard-write");
+    f.setAttribute("allowfullscreen", "");
+    $("#frameWrap").appendChild(f);
+    return f;
+  }
+
+  async function loadFrame() {
+    const x = current; if (!x) return;
+    const st = $("#status"), tx = $("#statusTxt");
+    st.classList.remove("hide");
+    tx.textContent = "Loading…";
+    try {
+      const r = await fetch(x.url);
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      let html = await r.text();
+      if (current !== x) return;   // left before it finished loading
+      // Make relative asset paths resolve against the original folder — but only
+      // when the page doesn't already declare its own <base> (the first <base>
+      // in a document wins, so adding ours would break pages that set one).
+      const base = /<base[\s>]/i.test(html) ? "" : `<base href="${baseOf(x.url)}">`;
+      // Some items bundle a video-site SDK that assumes it is hosted by that site
+      // whenever it sits inside a frame. Tell it it is standalone instead.
+      const ytFix = /ytgame/i.test(html)
+        ? "<script>(function(){var v;try{Object.defineProperty(window,'ytgame',{configurable:true,get:function(){return v},set:function(x){try{if(x&&typeof x==='object')x.IN_PLAYABLES_ENV=false}catch(e){}v=x}})}catch(e){}})();<\/script>"
+        : "";
+      const inject = storageShim(x.title) + ytFix + base;
+      if (/<head[^>]*>/i.test(html)) html = html.replace(/<head[^>]*>/i, m => m + inject);
+      else if (/<html[^>]*>/i.test(html)) html = html.replace(/<html[^>]*>/i, m => m + inject);
+      else html = inject + html;
+      lastHtml = html;
+      if (blobUrl) URL.revokeObjectURL(blobUrl);
+      blobUrl = URL.createObjectURL(new Blob([html], { type: "text/html" }));
+      const fr = newFrame();
+      fr.onload = () => { st.classList.add("hide"); try { fr.focus(); } catch {} };
+      // The #origin hint gives that SDK a valid target origin so it no longer throws.
+      fr.src = blobUrl + "#origin=" + encodeURIComponent("https://www.youtube.com");
+    } catch (e) {
+      tx.innerHTML = "Couldn’t load this one.<br><br><button class='btn' id='retry'>Retry</button>";
+      $("#retry").onclick = loadFrame;
+    }
+  }
+
+  function closeViewer(fromPop) {
+    $("#viewer").classList.remove("open");
+    document.body.style.overflow = "";
+    const f = $("#frame"); if (f) f.remove();      // removing it also drops its history entries
+    if (blobUrl) { URL.revokeObjectURL(blobUrl); blobUrl = null; }
+    current = null; lastHtml = "";
+    if (document.fullscreenElement) document.exitFullscreen();
+    render();
+    if (pushed) {
+      pushed = false;
+      // tidy up the entry we pushed (skip if the browser's own Back already did)
+      if (!fromPop && history.state && history.state.v) history.back();
+    }
+  }
+
+  $("#vBack").onclick = () => closeViewer();
+  window.addEventListener("popstate", () => { if ($("#viewer").classList.contains("open")) closeViewer(true); });
+  $("#vReload").onclick = loadFrame;
+  $("#vFav").onclick = () => current && toggleFav(current.title);
+  $("#vFull").onclick = () => {
+    const w = $("#frameWrap");
+    (w.requestFullscreen || w.webkitRequestFullscreen).call(w);
+    try { $("#frame").focus(); } catch {}
+  };
+  // about:blank cloak: a blank tab that simply contains the given address
+  function openCloaked(src) {
+    const w = window.open("about:blank", "_blank");
+    if (!w) { toast("Pop-up blocked — allow pop-ups for this page"); return false; }
+    w.document.title = document.title;
+    const ic = w.document.createElement("link"); ic.rel = "icon"; ic.href = $("#fav").href; w.document.head.appendChild(ic);
+    const f = w.document.createElement("iframe");
+    f.src = src;
+    f.setAttribute("allow", "fullscreen; autoplay; gamepad; clipboard-read; clipboard-write");
+    f.setAttribute("allowfullscreen", "");
+    f.style.cssText = "position:fixed;inset:0;width:100%;height:100%;border:0";
+    w.document.body.style.margin = "0";
+    w.document.body.appendChild(f);
+    return true;
+  }
+
+  $("#vNew").onclick = () => {
+    if (!lastHtml) return;
+    const u = URL.createObjectURL(new Blob([lastHtml], { type: "text/html" })) + "#origin=" + encodeURIComponent("https://www.youtube.com");
+    // already cloaked? then keep it cloaked
+    if (inCloak()) openCloaked(u); else window.open(u, "_blank");
+  };
+
+  // ---- controls ----
+  $("#q").addEventListener("input", render);
+  $("#sort").value = store.get("sort", "az");
+  $("#sort").onchange = () => { store.set("sort", $("#sort").value); render(); };
+  document.querySelectorAll(".tab").forEach(b => b.onclick = () => {
+    tab = b.dataset.tab;
+    document.querySelectorAll(".tab").forEach(t => t.classList.toggle("on", t === b));
+    render();
+  });
+  $("#randBtn").onclick = () => {
+    const pool = visible().length ? visible() : items;
+    if (pool.length) openItem(pool[Math.floor(Math.random() * pool.length)]);
+  };
+
+  // about:blank cloak
+  $("#cloakBtn").onclick = () => {
+    if (openCloaked(location.href)) toast("Opened — you can close this tab");
+  };
+
+  // settings
+  const S = $("#settings");
+  $("#setBtn").onclick = () => S.classList.add("open");
+  $("#closeSet").onclick = () => S.classList.remove("open");
+  S.addEventListener("click", e => { if (e.target === S) S.classList.remove("open"); });
+  $("#disguise").value = store.get("disguise", "default");
+  $("#customTitle").value = store.get("customTitle", "");
+  const showCustom = () => $("#customRow").style.display = $("#disguise").value === "custom" ? "flex" : "none";
+  showCustom();
+  $("#disguise").onchange = () => { store.set("disguise", $("#disguise").value); showCustom(); applyDisguise(); };
+  $("#customTitle").oninput = () => { store.set("customTitle", $("#customTitle").value); applyDisguise(); };
+  $("#panicKey").value = store.get("panicKey", "`");
+  $("#panicUrl").value = store.get("panicUrl", "https://classroom.google.com");
+  $("#panicKey").oninput = () => store.set("panicKey", $("#panicKey").value || "`");
+  $("#panicUrl").oninput = () => store.set("panicUrl", $("#panicUrl").value);
+  $("#theme").value = store.get("theme", "dark");
+  const applyTheme = () => document.documentElement.dataset.theme = store.get("theme", "dark");
+  $("#theme").onchange = () => { store.set("theme", $("#theme").value); applyTheme(); };
+  $("#refreshBtn").onclick = () => loadList(true);
+  $("#clearBtn").onclick = () => {
+    if (!confirm("Clear favorites, recent and counts?")) return;
+    favs = new Set(); recent = []; counts = {};
+    store.set("favs", []); store.set("recent", []); store.set("counts", {});
+    render(); toast("Cleared");
+  };
+
+  // keyboard: search focus, quick-hide
+  let lastEsc = 0;
+  function panic() {
+    let u = store.get("panicUrl", "https://classroom.google.com") || "https://classroom.google.com";
+    if (!/^https?:\/\//i.test(u)) u = "https://" + u;
+    location.replace(u);
+  }
+  document.addEventListener("keydown", e => {
+    const typing = /INPUT|TEXTAREA|SELECT/.test((e.target.tagName || ""));
+    if (e.key === "/" && !typing) { e.preventDefault(); $("#q").focus(); return; }
+    if (!typing && e.key === store.get("panicKey", "`")) { panic(); return; }
+    if (e.key === "Escape") {
+      const now = Date.now();
+      if (now - lastEsc < 450) { panic(); return; }
+      lastEsc = now;
+      if (S.classList.contains("open")) S.classList.remove("open");
+    }
+  });
+
+  // init
+  applyTheme();
+  applyDisguise();
+  loadList(false);
+})();
+</script>
+</body>
+</html>
