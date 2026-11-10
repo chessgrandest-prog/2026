@@ -8,11 +8,15 @@
 :root{
   --bg:#1f252d; --panel:#29303a; --line:#3b4552; --ink:#ece9e2; --muted:#9ba6b2;
   --light:#e1e4da; --dark:#6d8298; --amber:#e3a83b; --check:#d9534f;
-  --bd:min(94vw, calc(100vh - 175px), 640px);
+  --bdmax:min(94vw, calc(100vh - 175px), 720px); --bscale:1;
+  --hl-last:rgba(227,168,59,.5); --hl-sel:rgba(227,168,59,.8);
+  --hl-check:rgba(217,83,79,1); --hl-check2:rgba(217,83,79,.8); --hl-check0:rgba(217,83,79,0);
+  --hl-pre:rgba(74,144,217,.55); --hl-pre-solid:#4a90d9;
   --extra:92px;
   color-scheme:dark;
 }
 *{box-sizing:border-box}
+body{--bd:calc(var(--bdmax) * var(--bscale))}
 html,body{margin:0;background:var(--bg);color:var(--ink)}
 body{
   font-family:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
@@ -30,9 +34,16 @@ body{
 .sq{position:relative;display:grid;place-items:center;cursor:default}
 .sq.lt{background-color:var(--light)}
 .sq.dk{background-color:var(--dark)}
-.sq.last{background-image:linear-gradient(#e3a83b88,#e3a83b88)}
-.sq.sel{background-image:linear-gradient(#e3a83bd0,#e3a83bd0)}
-.sq.chk{background-image:radial-gradient(circle,#d9534f 0,#d9534fcc 35%,#d9534f00 75%)}
+.sq.last{background-image:linear-gradient(var(--hl-last),var(--hl-last))}
+.sq.sel{background-image:linear-gradient(var(--hl-sel),var(--hl-sel))}
+.sq.chk{background-image:radial-gradient(circle,var(--hl-check) 0,var(--hl-check2) 35%,var(--hl-check0) 75%)}
+.sq.pre{background-image:linear-gradient(var(--hl-pre),var(--hl-pre))}
+.sq.pdot::after{content:"";position:absolute;width:28%;height:28%;border-radius:50%;background:var(--hl-pre-solid);opacity:.7;pointer-events:none}
+.hs-ring .sq.dot::after{width:72%;height:72%;background:none;border:max(3px,.7vmin) solid #1d2128;opacity:.3}
+.hs-tint .sq.dot::after,.hs-tint .sq.cap::after{inset:0;width:auto;height:auto;border:0;border-radius:0;background:#1d2128;opacity:.2}
+.pc{position:relative}
+.fadeGhost{position:absolute!important;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;animation:fadeOut var(--ms,200ms) ease-out forwards}
+@keyframes fadeOut{from{opacity:1;transform:scale(1)}to{opacity:0;transform:scale(.7)}}
 .sq.dot::after{content:"";position:absolute;width:28%;height:28%;border-radius:50%;background:#1d2128;opacity:.32;pointer-events:none}
 .sq.cap::after{content:"";position:absolute;inset:5%;border-radius:50%;border:max(4px,.9vmin) solid #1d2128;opacity:.32;pointer-events:none}
 .sq .co{position:absolute;font:600 clamp(9px,1.6vmin,12px)/1 system-ui,sans-serif;pointer-events:none}
@@ -166,7 +177,7 @@ body.mode-ana .stage{margin-left:30px}
 .evbW{position:absolute;left:0;right:0;bottom:0;height:50%;background:#f2f0ea;transition:height .35s}
 .evalbar.flip .evbW{top:0;bottom:auto}
 .evbT{position:absolute;left:0;right:0;text-align:center;font:700 .56rem/1 system-ui,sans-serif;padding:3px 0;overflow:hidden}
-#arrows{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+#arrows,#marks{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .arw0 line{stroke:#3ba55d}.arw0 polygon{fill:#3ba55d}
 .arw1 line{stroke:#5b8fc9}.arw1 polygon{fill:#5b8fc9}
 .arw2 line{stroke:#8a8f98}.arw2 polygon{fill:#8a8f98}
@@ -217,14 +228,87 @@ body.mode-ana .btns,body.mode-ana .tip{display:none!important}
 }
 #pgnText:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
 #impMsg{min-height:1.2em}
+
+/* ---------- layout: focus mode, header buttons, drawer ---------- */
+.head h1{margin:0}
+.headBtns{display:flex;gap:6px}
+.headBtns button{padding:4px 9px;font-size:.78rem}
+.netBtn{display:none!important}
+body.mode-net .netBtn{display:block!important}
+.drawerHandle{display:none}
+html.focus .panel,html.focus .evalbar{display:none!important}
+html.focus .stage{margin-left:0!important}
+html.focus:not(.fclk) .strip{display:none!important}
+html.focus body{--bdmax:min(96vw, calc(100vh - 36px), 1000px);padding:12px}
+html.focus.fclk body{--bdmax:min(96vw, calc(100vh - 128px), 1000px)}
+html.focus.dim{--bg:#0f1318}
+#focusExit{display:none;position:fixed;top:10px;right:10px;z-index:90;opacity:.35;padding:6px 12px;font-size:.8rem}
+html.focus #focusExit{display:block}
+#focusExit:hover,#focusExit:focus-visible{opacity:1}
+@media (max-width:720px){
+  html:not(.nodrawer) body{--bdmax:min(96vw, calc(100vh - 215px), 720px);padding-bottom:70px}
+  html:not(.nodrawer) body.mode-ana{--bdmax:min(90vw, calc(100vh - 215px), 720px)}
+  html:not(.nodrawer) .panel{
+    position:fixed;left:0;right:0;bottom:0;width:auto;height:min(80vh,580px);border-radius:14px 14px 0 0;
+    transform:translateY(calc(100% - 54px));transition:transform .25s ease;z-index:30;padding-top:0;
+    box-shadow:0 -8px 30px #0006;
+  }
+  html:not(.nodrawer) .panel.open{transform:none}
+  html:not(.nodrawer) .drawerHandle{
+    display:flex;position:sticky;top:0;z-index:2;align-items:center;gap:10px;width:100%;height:54px;margin:0 0 4px;
+    background:var(--panel);border:0;border-radius:14px 14px 0 0;padding:0 4px;text-align:left;font:1rem Georgia,serif;
+  }
+  html:not(.nodrawer) .drawerHandle .grip{flex:none;width:36px;height:5px;border-radius:3px;background:var(--line)}
+  html:not(.nodrawer) .drawerHandle #drawerStatus{flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+  html:not(.nodrawer) #toasts{bottom:72px}
+  html.focus:not(.nodrawer) body{padding-bottom:12px;--bdmax:min(96vw, calc(100vh - 36px), 1000px)}
+  html.focus.fclk:not(.nodrawer) body{--bdmax:min(96vw, calc(100vh - 128px), 1000px)}
+}
+
+/* ---------- toasts, confirm, game over, history, new settings controls ---------- */
+#toasts{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:300;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;width:min(92vw,420px)}
+.toast{pointer-events:auto;background:#323b47;border:1px solid var(--line);border-radius:8px;padding:10px 14px;box-shadow:0 8px 24px #0007;font:.9rem/1.35 system-ui,sans-serif;display:flex;gap:12px;align-items:center;justify-content:space-between;width:100%;animation:toastIn .2s ease-out}
+.toast .tb{display:flex;gap:6px;flex:none}
+.toast button{padding:4px 10px;font-size:.82rem}
+@keyframes toastIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.box.cfm,.box.goBox{width:min(92vw,400px);text-align:left;font-family:system-ui,sans-serif}
+.cfm h2,.goBox h2{margin:0 0 8px;font:600 1.35rem Georgia,serif}
+.cfm p,.goBox p{margin:0 0 6px;line-height:1.45;color:var(--muted)}
+button.danger{background:#c0504d;border-color:#c0504d;color:#fff}
+button.danger:hover{background:#d0605d}
+.goBox{text-align:center}
+.goBox h2{font-size:1.7rem}
+.goBtns{flex-wrap:wrap}
+.linkBtn{margin-top:12px;background:none;border:0;color:var(--muted);text-decoration:underline;padding:4px;font-size:.85rem}
+.statsGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:8px 0 4px}
+.stat{background:#303844;border-radius:6px;padding:8px 4px;text-align:center}
+.stat b{display:block;font:700 1.25rem Georgia,serif}
+.stat span{font:.72rem system-ui,sans-serif;color:var(--muted)}
+.histList{max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:6px;background:#252c35}
+.histRow{display:grid;grid-template-columns:1fr auto;gap:2px 8px;padding:8px 10px;border-bottom:1px solid var(--line);font:.85rem/1.35 system-ui,sans-serif}
+.histRow:last-child{border-bottom:0}
+.histRow .meta{color:var(--muted);font-size:.78rem}
+.histRow .res{font-weight:700;align-self:center}
+.histRow .res.w{color:#7bc88f}.histRow .res.l{color:#f0867f}.histRow .res.d{color:var(--muted)}
+.histRow .ra{grid-column:1/-1;display:flex;gap:6px;margin-top:4px}
+.histRow .ra button{padding:3px 9px;font-size:.76rem}
+.histEmpty{padding:14px;color:var(--muted);font:.88rem system-ui,sans-serif;text-align:center}
+.selRow label{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:6px 0;font-size:.9rem}
+.selRow select{min-width:150px}
+.rng{display:flex;align-items:center;gap:10px;font-size:.9rem;margin:4px 0 10px}
+.rng input{flex:1;accent-color:#e3a83b}
+.rng span{width:3.2em;text-align:right;color:var(--muted);font:.82rem system-ui,sans-serif}
+.set .acts{margin:6px 0}
+.customRow.four{grid-template-columns:1fr 1fr}
+button.small{padding:4px 10px;font-size:.8rem;margin-top:8px}
 @media (max-width:960px){
-  body.mode-ana{--bd:min(88vw, 70vh, 640px)}
+  body.mode-ana{--bdmax:min(88vw, 70vh, 720px)}
   body.mode-ana .stage{margin-left:26px}
   .evalbar{left:-26px;width:18px}
   #puzWrap{flex:none;max-height:none}
   .panel{height:auto;width:var(--bd)}
   #moves{max-height:140px;flex:none}
-  :root{--bd:min(94vw, 70vh, 640px)}
+  :root{--bdmax:min(94vw, 70vh, 720px)}
 }
 </style>
 </head>
@@ -236,11 +320,13 @@ body.mode-ana .btns,body.mode-ana .tip{display:none!important}
       <div class="evalbar" id="evalbar"><div class="evbW" id="evbW"></div><span class="evbT" id="evbT"></span></div>
       <div id="board" aria-label="Chess board"></div>
       <svg id="arrows" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
+      <svg id="marks" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
     </div>
     <div class="strip" id="clockBot"><span class="nm"></span><span class="tm"></span></div>
   </div>
-  <aside class="panel">
-    <div class="head"><h1>Chess</h1><button id="setBtn" aria-haspopup="dialog">Settings</button></div>
+  <aside class="panel" id="panel">
+    <button id="drawerBtn" class="drawerHandle" aria-expanded="false" aria-controls="panel"><span class="grip"></span><span id="drawerStatus">Chess</span></button>
+    <div class="head"><h1>Chess</h1><div class="headBtns"><button id="focusBtn" title="Hide everything except the board (Z)">Focus</button><button id="statsBtn">Stats</button><button id="setBtn" aria-haspopup="dialog">Settings</button></div></div>
     <div id="status" role="status" aria-live="polite"></div>
     <div id="anaTop" class="anaBlock">
       <div class="engBox">
@@ -295,7 +381,7 @@ body.mode-ana .btns,body.mode-ana .tip{display:none!important}
         <label>Increment (seconds) <input type="number" id="tcInc" min="0" max="60" step="1" value="0"></label>
       </div>
       <label class="puzOpt wide">Difficulty
-        <select id="diff"><option value="0">Beginner (under 1000)</option><option value="1" selected>Intermediate (1000 to 1499)</option><option value="2">Advanced (1500 to 1999)</option><option value="3">Expert (2000 and up)</option></select>
+        <select id="diff"><option value="0">Beginner (under 1000)</option><option value="1" selected>Intermediate (1000 to 1499)</option><option value="2">Advanced (1500 to 1999)</option><option value="3">Expert (2000 and up)</option><option value="4">Match my rating</option></select>
       </label>
       <label class="sideOnly">You play
         <select id="side"><option value="w">White</option><option value="b">Black</option><option value="r">Random</option></select>
@@ -317,6 +403,8 @@ body.mode-ana .btns,body.mode-ana .tip{display:none!important}
     <div class="btns">
       <button id="newBtn" class="primary">New game</button>
       <button id="undoBtn">Undo</button>
+      <button id="drawBtn" class="netBtn">Draw</button>
+      <button id="tbBtn" class="netBtn">Takeback</button>
       <button id="resignBtn" class="resignBtn">Resign</button>
       <button id="hintBtn" class="puzBtn">Hint</button>
       <button id="solveBtn" class="puzBtn">Solution</button>
@@ -326,6 +414,8 @@ body.mode-ana .btns,body.mode-ana .tip{display:none!important}
     <p class="tip">Click a piece, then a highlighted square. You can also drag.</p>
   </aside>
 </main>
+<button id="focusExit" aria-label="Exit focus mode">Exit focus</button>
+<div id="toasts"></div>
 
 <div id="settings" class="modal" hidden>
   <div class="box set" role="dialog" aria-label="Settings">
@@ -338,10 +428,61 @@ body.mode-ana .btns,body.mode-ana .tip{display:none!important}
     </div>
     <h3>Pieces</h3>
     <div id="pieceSets" class="pieceGrid"></div>
+    <h3>Highlights</h3>
+    <div class="customRow four">
+      <label>Last move <input type="color" id="cHlLast" value="#e3a83b"></label>
+      <label>Selected piece <input type="color" id="cHlSel" value="#e3a83b"></label>
+      <label>Check <input type="color" id="cHlCheck" value="#d9534f"></label>
+      <label>Premove <input type="color" id="cHlPre" value="#4a90d9"></label>
+    </div>
+    <button id="hlReset" class="small">Reset highlights</button>
+    <h3>Gameplay</h3>
+    <div class="selRow">
+      <label>Piece animation <select id="optAnim"><option value="off">Off</option><option value="fast">Fast</option><option value="normal">Normal</option><option value="slow">Slow</option></select></label>
+      <label>Move input <select id="optInput"><option value="both">Click or drag</option><option value="click">Click only</option><option value="drag">Drag only</option></select></label>
+      <label>Legal move hints <select id="optHint"><option value="dots">Dots</option><option value="ring">Rings</option><option value="tint">Tinted squares</option></select></label>
+    </div>
+    <label class="chk"><input type="checkbox" id="optAutoQ"> Always promote to a queen</label>
+    <label class="chk"><input type="checkbox" id="optPre"> Premoves (queue a move while it is not your turn)</label>
+    <label class="chk"><input type="checkbox" id="optMarks"> Right-click to draw arrows and circles</label>
+    <label class="chk"><input type="checkbox" id="optGo"> Show a pop-up when a game ends</label>
+    <h3>Layout</h3>
+    <label class="rng">Board size <input type="range" id="optSize" min="50" max="100" step="1"><span id="sizeVal"></span></label>
+    <div class="acts"><button id="focusBtn2">Focus mode</button><button id="fsBtn">Full screen</button></div>
+    <label class="chk"><input type="checkbox" id="optClk"> Keep clocks visible in focus mode</label>
+    <label class="chk"><input type="checkbox" id="optDim"> Dim the page in focus mode</label>
+    <label class="chk"><input type="checkbox" id="optDrawer"> Slide-up panel on small screens</label>
     <h3>Display</h3>
     <label class="chk"><input type="checkbox" id="optCoords"> Show coordinates</label>
     <label class="chk"><input type="checkbox" id="optHints"> Show legal move hints</label>
+    <p class="tip">Keys: Z focus mode, F flip the board, arrow keys step through an analysis. Right-drag draws an arrow (Shift red, Ctrl blue, Alt yellow).</p>
+    <div class="acts"><button id="setReset">Reset all settings</button></div>
     <p class="credit">Piece artwork from Lichess: Standard by Colin M.L. Burnett (GPLv2+), Merida by Armando Hernandez Marroquin (GPLv2+), Chessnut by Alexis Luengas (Apache 2.0), Alpha by Eric Bentzen (free for personal, non-commercial use).</p>
+  </div>
+</div>
+
+<div id="cfmDlg" class="modal" hidden>
+  <div class="box cfm" role="alertdialog" aria-labelledby="cfmTitle">
+    <h2 id="cfmTitle"></h2><p id="cfmText"></p>
+    <div class="dlgBtns"><button id="cfmCancel">Cancel</button><button id="cfmOk" class="primary">OK</button></div>
+  </div>
+</div>
+
+<div id="goDlg" class="modal" hidden>
+  <div class="box goBox" role="dialog" aria-labelledby="goTitle">
+    <h2 id="goTitle"></h2><p id="goText"></p>
+    <div class="dlgBtns goBtns"><button id="goRematch" class="primary">Rematch</button><button id="goAnalyze">Analyze</button><button id="goNew">New game</button></div>
+    <button id="goClose" class="linkBtn">View the board</button>
+  </div>
+</div>
+
+<div id="histDlg" class="modal" hidden>
+  <div class="box set" role="dialog" aria-label="Stats and history">
+    <div class="setHead"><h2>Stats and history</h2><button id="histClose" class="primary">Close</button></div>
+    <div id="statsGrid" class="statsGrid"></div>
+    <h3>Saved games</h3>
+    <div id="histList" class="histList"></div>
+    <div class="dlgBtns"><button id="histExport">Copy all PGN</button><button id="histClear">Clear history</button></div>
   </div>
 </div>
 
@@ -940,9 +1081,56 @@ const promoEl = $('promo'), promoBtns = $('promoBtns');
 
 let cur, log, keys, lastMove, sel, legalMoves, flipped = false;
 let mode = 'cpu', human = 'w', over = false, busy = false, gen = 0, drag = null;
-let S = {board:'slate', light:'#e1e4da', dark:'#6d8298', pieces:'cburnett', coords:true, hints:true};
+const DEFAULTS = {board:'slate', light:'#e1e4da', dark:'#6d8298', pieces:'cburnett', coords:true, hints:true,
+  boardSize:100, focusClocks:true, focusDim:true, drawer:true,
+  anim:'normal', hintStyle:'dots', autoQueen:false, input:'both', premove:true, marks:true, goCard:true,
+  hlLast:'#e3a83b', hlSel:'#e3a83b', hlCheck:'#d9534f', hlPre:'#4a90d9'};
+let S = Object.assign({}, DEFAULTS);
+let premove = null, noAnim = false, animMove = null, goDone = false, gameSeq = 0, booting = true, focusOn = false;
 let net = null, netReady = false, result = null, wantRe = false, oppRe = false, netNote = '';
 const newBtn = $('newBtn'), netInfo = $('netInfo'), codeIn = $('codeIn');
+
+// ----- storage, toasts and confirm dialogs -----
+const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } };
+const lsDel = k => { try { localStorage.removeItem(k); } catch (e) {} };
+const toastsEl = $('toasts');
+function toast(text, o){
+  o = o || {};
+  const t = document.createElement('div'); t.className = 'toast';
+  const msg = document.createElement('span'); msg.textContent = text; t.appendChild(msg);
+  let timer = 0;
+  const api = { close(){ clearTimeout(timer); if (t.parentNode) t.parentNode.removeChild(t); } };
+  if (o.actions && o.actions.length){
+    const box = document.createElement('div'); box.className = 'tb';
+    for (const a of o.actions){
+      const b = document.createElement('button'); b.textContent = a.label;
+      if (a.primary) b.className = 'primary';
+      b.onclick = () => { api.close(); if (a.fn) a.fn(); };
+      box.appendChild(b);
+    }
+    t.appendChild(box);
+  }
+  toastsEl.appendChild(t);
+  while (toastsEl.children.length > 4) toastsEl.removeChild(toastsEl.firstChild);
+  timer = setTimeout(api.close, o.ms || (o.actions ? 30000 : 3200));
+  return api;
+}
+const cfmDlg = $('cfmDlg'), cfmOk = $('cfmOk'), cfmCancel = $('cfmCancel');
+let cfmAbort = null;
+function confirmDialog(o){
+  return new Promise(res => {
+    $('cfmTitle').textContent = o.title; $('cfmText').textContent = o.text || '';
+    cfmOk.textContent = o.ok || 'OK'; cfmCancel.textContent = o.cancel || 'Cancel';
+    cfmOk.classList.toggle('danger', !!o.danger); cfmOk.classList.toggle('primary', !o.danger);
+    const done = v => { cfmDlg.hidden = true; cfmAbort = null; cfmOk.onclick = cfmCancel.onclick = cfmDlg.onclick = null; res(v); };
+    cfmAbort = () => done(false);
+    cfmOk.onclick = () => done(true); cfmCancel.onclick = () => done(false);
+    cfmDlg.onclick = e => { if (e.target === cfmDlg) done(false); };
+    cfmDlg.hidden = false; cfmOk.focus();
+  });
+}
+
 
 function humanTurn(){
   if (mode === 'two') return true;
@@ -955,6 +1143,7 @@ const pickSide = () => sideSel.value === 'r' ? (Math.random() < .5 ? 'w' : 'b') 
 
 function resetBoard(){
   gen++; busy = false; result = null; ckInit();
+  gameSeq++; goDone = false; premove = null; clearMarks();
   cur = initial(); log = []; keys = [posKey(cur)]; lastMove = null; sel = null;
   flipped = (mode === 'cpu' || mode === 'net') && human === 'b';
   legalMoves = genLegal(cur);
@@ -967,6 +1156,9 @@ function newGame(){
   teardownNet(); puz = null;
   Eng.stop(); if (AN) clearTimeout(AN.timer); AN = null;
   human = pickSide(); tc = readTC();
+  lastUI = {side:sideSel.value};
+  if (!booting) lsDel(SAVE_GAME);
+  premove = null; clearMarks(); gameSeq++;
   newBtn.textContent = mode === 'net' ? 'Rematch' : mode === 'puz' ? 'Next puzzle' : 'New game';
   if (mode === 'puz'){ nextPuzzle(); return; }
   if (mode === 'ana'){ anaStart(null); return; }
@@ -1007,10 +1199,48 @@ function computeStatus(){
   }
 }
 
+const ANIM_MS = {off:0, fast:110, normal:200, slow:360};
+const pmSel = () => sel !== null && !!cur.b[sel] && colorOf(cur.b[sel]) !== cur.turn;
+
+function runAnim(am){
+  const ms = ANIM_MS[S.anim];
+  if (!ms) return;
+  const sqw = boardEl.getBoundingClientRect().width / 8;
+  const pos = i => { let c = i & 7, r = i >> 3; if (flipped){ c = 7 - c; r = 7 - r; } return [c, r]; };
+  const slide = (from, to) => {
+    const el = boardEl.querySelector(`.sq[data-i="${to}"] .pc`);
+    if (!el) return;
+    const [c0, r0] = pos(from), [c1, r1] = pos(to);
+    el.style.transition = 'none';
+    el.style.transform = `translate(${(c0 - c1) * sqw}px,${(r0 - r1) * sqw}px)`;
+    el.style.zIndex = '6';
+    void el.offsetWidth;
+    el.style.transition = `transform ${ms}ms ease-out`;
+    el.style.transform = 'translate(0,0)';
+    setTimeout(() => { el.style.transition = ''; el.style.transform = ''; el.style.zIndex = ''; }, ms + 40);
+  };
+  slide(am.from, am.to);
+  if (am.castle){ const k = am.castle === 'K'; slide(k ? am.to + 1 : am.to - 2, k ? am.to - 1 : am.to + 1); }
+  if (am.cap){
+    const sq = am.ep ? (am.from >> 3) * 8 + (am.to & 7) : am.to;
+    const host = boardEl.querySelector(`.sq[data-i="${sq}"]`);
+    if (host){
+      const g = pieceEl(am.cap);
+      g.classList.add('fadeGhost'); g.style.setProperty('--ms', ms + 'ms');
+      host.appendChild(g);
+      setTimeout(() => { if (g.parentNode) g.parentNode.removeChild(g); }, ms + 40);
+    }
+  }
+}
+
 function render(){
   boardEl.innerHTML = '';
   const targets = new Map();
-  if (sel !== null) for (const m of legalMoves) if (m.from === sel) targets.set(m.to, m);
+  const pm = pmSel();
+  if (sel !== null){
+    if (pm){ for (const m of premoveTargets(sel)) targets.set(m.to, m); }
+    else for (const m of legalMoves) if (m.from === sel) targets.set(m.to, m);
+  }
   const hs = new Set();
   if (mode === 'puz' && puz && !puz.done && puz.hint){
     const u = puz.p.moves[puz.idx];
@@ -1023,16 +1253,19 @@ function render(){
     d.className = 'sq ' + ((r + c) % 2 === 0 ? 'lt' : 'dk');
     d.dataset.i = i;
     if (lastMove && (i === lastMove.from || i === lastMove.to)) d.classList.add('last');
+    if (premove && (i === premove.from || i === premove.to)) d.classList.add('pre');
     if (hs.has(i)) d.classList.add('hint');
     if (sel === i) d.classList.add('sel');
     if (i === chkSq) d.classList.add('chk');
     const p = cur.b[i];
-    if (S.hints && targets.has(i)) d.classList.add(p || targets.get(i).ep ? 'cap' : 'dot');
+    if (S.hints && targets.has(i)) d.classList.add(pm ? 'pdot' : (p || targets.get(i).ep ? 'cap' : 'dot'));
     if (p) d.appendChild(pieceEl(p));
     if (vc === 0){ const o = document.createElement('span'); o.className = 'co r'; o.textContent = 8 - r; d.appendChild(o); }
     if (vr === 7){ const o = document.createElement('span'); o.className = 'co f'; o.textContent = FILES[c]; d.appendChild(o); }
     boardEl.appendChild(d);
   }
+  if (animMove){ const am = animMove; animMove = null; runAnim(am); }
+  drawMarks();
 }
 
 function renderMoves(){
@@ -1056,6 +1289,10 @@ function renderMoves(){
   movesEl.scrollTop = movesEl.scrollHeight;
 }
 
+const playMode = () => mode === 'cpu' || mode === 'two' || mode === 'net';
+function syncLayout(){
+  document.documentElement.classList.toggle('fclk', focusOn && S.focusClocks && !!ck);
+}
 function update(){
   computeStatus();
   if (over) ckStop();
@@ -1072,6 +1309,21 @@ function update(){
   if (mode === 'puz') renderPuz();
   $('anaBtn').disabled = !log.length;
   $('anaBtn').classList.toggle('primary', over && log.length > 0);
+  const live = mode === 'net' && netReady && !over;
+  $('drawBtn').disabled = $('tbBtn').disabled = !live;
+  $('drawerStatus').textContent = statusEl.textContent || 'Chess';
+  syncLayout();
+  if (over && !goDone && playMode() && log.length >= 1) onGameEnd();
+}
+
+function pushMove(m){
+  const snap = ck ? {w:ckRemain('w'), b:ckRemain('b')} : null;
+  const san = toSAN(cur, m, legalMoves);
+  log.push({prev:cur, move:m, san, lastBefore:lastMove, ck:snap});
+  cur = makeMove(cur, m);
+  keys.push(posKey(cur));
+  lastMove = m; sel = null;
+  legalMoves = genLegal(cur);
 }
 
 function doMove(m, remote, forced, remoteMs){
@@ -1083,17 +1335,20 @@ function doMove(m, remote, forced, remoteMs){
     return flagFall(mover);
   }
   const n = log.length;
-  const san = toSAN(cur, m, legalMoves);
-  log.push({prev:cur, move:m, san, lastBefore:lastMove});
-  cur = makeMove(cur, m);
-  keys.push(posKey(cur));
-  lastMove = m; sel = null;
-  legalMoves = genLegal(cur);
+  pushMove(m);
+  animMove = (noAnim || S.anim === 'off') ? null : {from:m.from, to:m.to, cap:m.cap, ep:m.ep, castle:m.castle};
+  noAnim = false;
+  clearMarks();
+  incomingClose(!remote);
+  if (remote) offerOut = null;
+  if (mover === human) premove = null;
   ckMoved(mover, remote, remoteMs);
   if (mode === 'net' && !remote && net && net.conn && net.conn.open)
     net.conn.send({t:'move', n, from:m.from, to:m.to, promo:m.promo || '', ms: ck ? Math.round(ck[mover]) : 0});
   update();
   maybeComputer();
+  if (mode === 'cpu' || mode === 'two') saveGame();
+  setTimeout(tryPremove, 30);
 }
 
 function maybeComputer(){
@@ -1117,7 +1372,7 @@ function maybeComputer(){
 
 function undo(){
   if (busy || !log.length || mode === 'net' || mode === 'puz' || ck) return;
-  gen++;
+  gen++; premove = null; clearMarks();
   const pop = () => { const e = log.pop(); cur = e.prev; lastMove = e.lastBefore; keys.pop(); };
   pop();
   if (mode === 'cpu' && cur.turn !== human && log.length) pop();
@@ -1128,6 +1383,10 @@ function undo(){
 
 function attempt(ms){
   if (ms.length === 1) return doMove(ms[0]);
+  if (S.autoQueen && mode !== 'puz'){
+    const q = ms.find(m => m.promo === 'q');
+    if (q) return doMove(q);
+  }
   promoBtns.innerHTML = '';
   for (const pr of 'qrbn'){
     const btn = document.createElement('button');
@@ -1281,27 +1540,34 @@ function themeColors(){
   const t = BOARD_THEMES.find(x => x[0] === S.board) || BOARD_THEMES[0];
   return [t[2], t[3]];
 }
-function saveSettings(){ try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) {} }
+const HEX = /^#[0-9a-f]{6}$/i;
+function saveSettings(){ lsSet(SAVE_KEY, S); }
 function loadSettings(){
-  try {
-    const v = JSON.parse(localStorage.getItem(SAVE_KEY) || '{}');
-    if (v && typeof v === 'object'){
-      if (v.board === 'custom' || BOARD_THEMES.some(t => t[0] === v.board)) S.board = v.board;
-      if (/^#[0-9a-f]{6}$/i.test(v.light)) S.light = v.light;
-      if (/^#[0-9a-f]{6}$/i.test(v.dark)) S.dark = v.dark;
-      if (PIECE_CHOICES.some(c => c[0] === v.pieces)) S.pieces = v.pieces;
-      if (typeof v.coords === 'boolean') S.coords = v.coords;
-      if (typeof v.hints === 'boolean') S.hints = v.hints;
-    }
-  } catch (e) {}
+  const v = lsGet(SAVE_KEY, {});
+  if (!v || typeof v !== 'object') return;
+  if (v.board === 'custom' || BOARD_THEMES.some(t => t[0] === v.board)) S.board = v.board;
+  for (const k of ['light', 'dark', 'hlLast', 'hlSel', 'hlCheck', 'hlPre']) if (HEX.test(v[k])) S[k] = v[k];
+  if (PIECE_CHOICES.some(c => c[0] === v.pieces)) S.pieces = v.pieces;
+  for (const k of ['coords', 'hints', 'focusClocks', 'focusDim', 'drawer', 'autoQueen', 'premove', 'marks', 'goCard']) if (typeof v[k] === 'boolean') S[k] = v[k];
+  if (['off', 'fast', 'normal', 'slow'].includes(v.anim)) S.anim = v.anim;
+  if (['dots', 'ring', 'tint'].includes(v.hintStyle)) S.hintStyle = v.hintStyle;
+  if (['both', 'click', 'drag'].includes(v.input)) S.input = v.input;
+  if (Number.isFinite(+v.boardSize)) S.boardSize = Math.min(100, Math.max(50, Math.round(+v.boardSize)));
 }
+const rgba = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`; };
 function applySettings(){
-  const [l, d] = themeColors();
-  document.documentElement.style.setProperty('--light', l);
-  document.documentElement.style.setProperty('--dark', d);
+  const root = document.documentElement, [l, d] = themeColors();
+  root.style.setProperty('--light', l); root.style.setProperty('--dark', d);
+  root.style.setProperty('--bscale', S.boardSize / 100);
+  root.style.setProperty('--hl-last', rgba(S.hlLast, .5)); root.style.setProperty('--hl-sel', rgba(S.hlSel, .8));
+  root.style.setProperty('--hl-check', rgba(S.hlCheck, 1)); root.style.setProperty('--hl-check2', rgba(S.hlCheck, .8));
+  root.style.setProperty('--hl-check0', rgba(S.hlCheck, 0));
+  root.style.setProperty('--hl-pre', rgba(S.hlPre, .55)); root.style.setProperty('--hl-pre-solid', S.hlPre);
+  root.classList.toggle('nodrawer', !S.drawer); root.classList.toggle('dim', S.focusDim);
   boardEl.classList.toggle('nocoords', !S.coords);
+  for (const h of ['dots', 'ring', 'tint']) boardEl.classList.toggle('hs-' + h, S.hintStyle === h);
   saveSettings();
-  if (cur) render();
+  if (cur){ render(); syncLayout(); }
   renderSettings();
 }
 function renderSettings(){
@@ -1333,7 +1599,10 @@ function renderSettings(){
   }
   if (document.activeElement !== cLight) cLight.value = themeColors()[0];
   if (document.activeElement !== cDark) cDark.value = themeColors()[1];
-  $('optCoords').checked = S.coords; $('optHints').checked = S.hints;
+  for (const [id, key, t] of BIND){ const el = $(id); if (t === 'c') el.checked = !!S[key]; else el.value = S[key]; }
+  for (const [id, key] of HL_INPUTS) if (document.activeElement !== $(id)) $(id).value = S[key];
+  if (document.activeElement !== $('optSize')) $('optSize').value = S.boardSize;
+  $('sizeVal').textContent = S.boardSize + '%';
 }
 function openSettings(){ renderSettings(); settingsEl.hidden = false; }
 function closeSettings(){ settingsEl.hidden = true; }
@@ -1343,18 +1612,152 @@ settingsEl.addEventListener('click', e => { if (e.target === settingsEl) closeSe
 window.addEventListener('keydown', e => { if (e.key === 'Escape'){ closeSettings(); promoEl.hidden = true; } });
 cLight.addEventListener('input', () => { S.board = 'custom'; S.light = cLight.value; S.dark = cDark.value; applySettings(); });
 cDark.addEventListener('input', () => { S.board = 'custom'; S.light = cLight.value; S.dark = cDark.value; applySettings(); });
-$('optCoords').onchange = e => { S.coords = e.target.checked; applySettings(); };
-$('optHints').onchange = e => { S.hints = e.target.checked; applySettings(); };
+const BIND = [['optAnim', 'anim', 'v'], ['optInput', 'input', 'v'], ['optHint', 'hintStyle', 'v'], ['optAutoQ', 'autoQueen', 'c'],
+  ['optPre', 'premove', 'c'], ['optMarks', 'marks', 'c'], ['optGo', 'goCard', 'c'], ['optClk', 'focusClocks', 'c'],
+  ['optDim', 'focusDim', 'c'], ['optDrawer', 'drawer', 'c'], ['optCoords', 'coords', 'c'], ['optHints', 'hints', 'c']];
+const HL_INPUTS = [['cHlLast', 'hlLast'], ['cHlSel', 'hlSel'], ['cHlCheck', 'hlCheck'], ['cHlPre', 'hlPre']];
+for (const [id, key, t] of BIND){
+  const el = $(id);
+  el.onchange = () => { S[key] = t === 'c' ? el.checked : el.value; applySettings(); };
+}
+for (const [id, key] of HL_INPUTS) $(id).addEventListener('input', e => { S[key] = e.target.value; applySettings(); });
+$('optSize').addEventListener('input', e => { S.boardSize = +e.target.value; applySettings(); });
+$('hlReset').onclick = () => { for (const [, key] of HL_INPUTS) S[key] = DEFAULTS[key]; applySettings(); toast('Highlight colors reset.'); };
+$('setReset').onclick = () => confirmDialog({title:'Reset all settings?', text:'Board colors, pieces, layout and gameplay options go back to their defaults.', ok:'Reset', danger:true})
+  .then(ok => { if (ok){ Object.assign(S, DEFAULTS); applySettings(); toast('Settings reset.'); } });
 loadSettings();
 
-// ----- input: click to move, or drag -----
+// ----- input: click to move, drag, premoves and right-click marks -----
+const marksEl = $('marks');
+let marks = {arrows:[], squares:new Map()}, markStart = null;
+
+function sqCenter(i){
+  let c = i & 7, r = i >> 3;
+  if (flipped){ c = 7 - c; r = 7 - r; }
+  return [(c + .5) * 12.5, (r + .5) * 12.5];
+}
+function drawArrowsTo(svg, list, keep){
+  if (!keep) while (svg.firstChild) svg.removeChild(svg.firstChild);
+  const NS = 'http://www.w3.org/2000/svg';
+  for (const a of list){
+    const [x1, y1] = sqCenter(a.from), [x2, y2] = sqCenter(a.to);
+    const dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy) || 1, ux = dx / len, uy = dy / len;
+    const tx = x2 - ux * 4.2, ty = y2 - uy * 4.2;
+    const g = document.createElementNS(NS, 'g');
+    const ln = document.createElementNS(NS, 'line');
+    ln.setAttribute('x1', x1 + ux * 2.2); ln.setAttribute('y1', y1 + uy * 2.2);
+    ln.setAttribute('x2', tx); ln.setAttribute('y2', ty);
+    ln.setAttribute('stroke-width', '1.7'); ln.setAttribute('stroke-linecap', 'round');
+    const hd = document.createElementNS(NS, 'polygon');
+    hd.setAttribute('points', `${x2 - ux * .6},${y2 - uy * .6} ${tx - uy * 2.3},${ty + ux * 2.3} ${tx + uy * 2.3},${ty - ux * 2.3}`);
+    if (a.color){
+      g.setAttribute('opacity', '.8');
+      ln.setAttribute('stroke', a.color); hd.setAttribute('fill', a.color);
+    } else {
+      g.setAttribute('class', 'arw arw' + Math.min(a.cls, 2));
+      g.setAttribute('opacity', a.cls === 0 ? '.85' : '.55');
+    }
+    g.append(ln, hd);
+    svg.appendChild(g);
+  }
+}
+function drawMarks(){
+  while (marksEl.firstChild) marksEl.removeChild(marksEl.firstChild);
+  const NS = 'http://www.w3.org/2000/svg';
+  for (const [sq, color] of marks.squares){
+    const [x, y] = sqCenter(sq);
+    const c = document.createElementNS(NS, 'circle');
+    c.setAttribute('cx', x); c.setAttribute('cy', y); c.setAttribute('r', 5.4);
+    c.setAttribute('fill', 'none'); c.setAttribute('stroke', color); c.setAttribute('stroke-width', '1'); c.setAttribute('opacity', '.85');
+    marksEl.appendChild(c);
+  }
+  drawArrowsTo(marksEl, marks.arrows, true);
+}
+function clearMarks(){
+  if (marks.arrows.length || marks.squares.size){ marks = {arrows:[], squares:new Map()}; drawMarks(); }
+}
+function sqAt(e){
+  let t = null;
+  try { t = document.elementFromPoint ? document.elementFromPoint(e.clientX, e.clientY) : null; } catch (err) {}
+  t = t || e.target;
+  const q = t && t.closest ? t.closest('.sq') : null;
+  return q && boardEl.contains(q) ? +q.dataset.i : null;
+}
+const markColor = e => e.shiftKey ? '#d9534f' : (e.ctrlKey || e.metaKey) ? '#4a90d9' : e.altKey ? '#e3a83b' : '#3ba55d';
+function markDown(e){
+  if (!S.marks) return;
+  const i = sqAt(e);
+  if (i === null) return;
+  e.preventDefault();
+  markStart = {i, color:markColor(e)};
+  if (premove){ premove = null; sel = null; render(); }
+}
+function markUp(e){
+  if (!markStart) return;
+  const st = markStart; markStart = null;
+  const i = sqAt(e);
+  if (i === null) return;
+  if (i === st.i){
+    if (marks.squares.get(i) === st.color) marks.squares.delete(i); else marks.squares.set(i, st.color);
+  } else {
+    const k = marks.arrows.findIndex(a => a.from === st.i && a.to === i);
+    if (k >= 0){
+      const same = marks.arrows[k].color === st.color;
+      marks.arrows.splice(k, 1);
+      if (!same) marks.arrows.push({from:st.i, to:i, color:st.color});
+    } else marks.arrows.push({from:st.i, to:i, color:st.color});
+  }
+  drawMarks();
+}
+
+// premoves: queue one move while it is not your turn (computer and online games)
+function premoveOK(){
+  return S.premove && !over && !result && (mode === 'cpu' || (mode === 'net' && netReady)) && cur.turn !== human;
+}
+function premoveTargets(from){
+  const p = cur.b[from];
+  if (!p || colorOf(p) !== human) return [];
+  return genPseudo({b:cur.b, turn:human, c:cur.c, ep:-1, half:0, full:cur.full}).filter(m => m.from === from);
+}
+function setPremove(from, to){
+  const m = premoveTargets(from).find(x => x.to === to);
+  if (!m) return;
+  premove = {from, to, promo: m.promo ? 'q' : ''};
+  sel = null; render();
+}
+function premoveDown(e, i){
+  if (!premoveOK()) return;
+  e.preventDefault();
+  if (sel !== null && pmSel() && S.input !== 'drag' && premoveTargets(sel).some(m => m.to === i)){ setPremove(sel, i); return; }
+  const p = cur.b[i];
+  if (p && colorOf(p) === human){
+    const was = sel === i;
+    sel = i; render();
+    if (S.input === 'click'){ if (was){ sel = null; render(); } return; }
+    startDrag(e, i, was, true);
+  } else { sel = null; premove = null; render(); }
+}
+function tryPremove(){
+  if (!premove || over || !humanTurn()) return;
+  const pm = premove; premove = null;
+  const m = legalMoves.find(x => x.from === pm.from && x.to === pm.to && (x.promo || '') === pm.promo);
+  if (m) doMove(m); else render();
+}
+
+boardEl.addEventListener('contextmenu', e => e.preventDefault());
 boardEl.addEventListener('pointerdown', e => {
-  if (busy || over || !humanTurn() || e.button > 0) return;
+  if (e.button === 2) return markDown(e);
+  if (e.button > 0) return;
+  noAnim = false;
+  clearMarks();
+  closeDrawer();
   const sqEl = e.target.closest('.sq');
   if (!sqEl) return;
   const i = +sqEl.dataset.i;
+  if (busy || over || !humanTurn()) return premoveDown(e, i);
   e.preventDefault();
-  if (sel !== null){
+  premove = null;
+  if (sel !== null && S.input !== 'drag'){
     const ms = legalMoves.filter(m => m.from === sel && m.to === i);
     if (ms.length) return attempt(ms);
   }
@@ -1362,18 +1765,24 @@ boardEl.addEventListener('pointerdown', e => {
   if (p && colorOf(p) === cur.turn){
     const was = sel === i;
     sel = i; render();
-    const el = boardEl.querySelector(`.sq[data-i="${i}"]`);
-    const pc = el.querySelector('.pc');
-    const size = boardEl.getBoundingClientRect().width / 8;
-    const g = document.createElement('div');
-    g.className = 'ghost'; g.style.width = g.style.height = size + 'px';
-    g.appendChild(pc.cloneNode(true));
-    g.firstChild.style.fontSize = (size * .8) + 'px';
-    document.body.appendChild(g);
-    drag = {from:i, ghost:g, moved:false, x:e.clientX, y:e.clientY, was, el};
-    moveGhost(e);
+    if (S.input === 'click'){ if (was){ sel = null; render(); } return; }
+    startDrag(e, i, was, false);
   } else { sel = null; render(); }
 });
+function startDrag(e, i, was, pre){
+  const el = boardEl.querySelector(`.sq[data-i="${i}"]`);
+  const pc = el && el.querySelector('.pc');
+  if (!pc) return;
+  const size = boardEl.getBoundingClientRect().width / 8;
+  const g = document.createElement('div');
+  g.className = 'ghost'; g.style.width = g.style.height = size + 'px';
+  const clone = pc.cloneNode(true);
+  clone.style.fontSize = (size * .8) + 'px';
+  g.appendChild(clone);
+  document.body.appendChild(g);
+  drag = {from:i, ghost:g, moved:false, x:e.clientX, y:e.clientY, was, el, pre};
+  moveGhost(e);
+}
 function moveGhost(e){ drag.ghost.style.left = e.clientX + 'px'; drag.ghost.style.top = e.clientY + 'px'; }
 window.addEventListener('pointermove', e => {
   if (!drag) return;
@@ -1386,17 +1795,19 @@ function endDrag(e, cancel){
   if (!drag) return;
   const d = drag; drag = null; d.ghost.remove();
   if (d.moved && !cancel){
-    const t = document.elementFromPoint(e.clientX, e.clientY);
-    const el = t && t.closest ? t.closest('.sq') : null;
-    if (el){
-      const ms = legalMoves.filter(m => m.from === d.from && m.to === +el.dataset.i);
-      if (ms.length) return attempt(ms);
+    const to = sqAt(e);
+    if (to !== null){
+      if (d.pre){ if (premoveTargets(d.from).some(m => m.to === to)) return setPremove(d.from, to); }
+      else {
+        const ms = legalMoves.filter(m => m.from === d.from && m.to === to);
+        if (ms.length){ noAnim = true; return attempt(ms); }
+      }
     }
   } else if (!d.moved && d.was) sel = null;
   render();
 }
-window.addEventListener('pointerup', e => endDrag(e, false));
-window.addEventListener('pointercancel', e => endDrag(e, true));
+window.addEventListener('pointerup', e => { if (e.button === 2) markUp(e); else endDrag(e, false); });
+window.addEventListener('pointercancel', e => { markStart = null; endDrag(e, true); });
 
 // ===== analysis board & game review =====
 const E = (tag, cls, text) => { const x = document.createElement(tag); if (cls) x.className = cls; if (text != null) x.textContent = text; return x; };
@@ -1542,9 +1953,15 @@ function anaStart(src){
   if (src.moves){ let n = AN.root; for (const m of src.moves) n = addChild(n, m); }
   flipped = !!src.flipped;
   gen++; busy = false; result = null; ck = null; puz = null;
+  premove = null; clearMarks(); gameSeq++;
   anaGo(AN.root);
 }
 function anaGo(node){
+  const prev = AN.node;
+  animMove = (!noAnim && S.anim !== 'off' && node.mv && node.parent === prev)
+    ? {from:node.mv.from, to:node.mv.to, cap:node.mv.cap, ep:node.mv.ep, castle:node.mv.castle} : null;
+  noAnim = false;
+  clearMarks();
   AN.node = node; cur = node.st; lastMove = node.mv; sel = null;
   legalMoves = genLegal(cur);
   AN.info = null; AN.note = null; AN.runId++;
@@ -1673,27 +2090,7 @@ function setBar(ev){
   evbT.style.color = whiteLeads ? '#22262d' : '#ece9e2';
 }
 const uciArrow = (u, k) => ({from:uciSq(u, 0), to:uciSq(u, 2), cls:k});
-function drawArrows(list){
-  while (arrowsEl.firstChild) arrowsEl.removeChild(arrowsEl.firstChild);
-  const NS = 'http://www.w3.org/2000/svg';
-  const ctr = i => { let c = i & 7, r = i >> 3; if (flipped){ c = 7 - c; r = 7 - r; } return [(c + .5) * 12.5, (r + .5) * 12.5]; };
-  for (const a of list){
-    const [x1, y1] = ctr(a.from), [x2, y2] = ctr(a.to);
-    const dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy) || 1, ux = dx / len, uy = dy / len;
-    const tx = x2 - ux * 4.2, ty = y2 - uy * 4.2;
-    const g = document.createElementNS(NS, 'g');
-    g.setAttribute('class', 'arw arw' + Math.min(a.cls, 2));
-    g.setAttribute('opacity', a.cls === 0 ? '.85' : '.55');
-    const ln = document.createElementNS(NS, 'line');
-    ln.setAttribute('x1', x1 + ux * 2.2); ln.setAttribute('y1', y1 + uy * 2.2);
-    ln.setAttribute('x2', tx); ln.setAttribute('y2', ty);
-    ln.setAttribute('stroke-width', '1.7'); ln.setAttribute('stroke-linecap', 'round');
-    const hd = document.createElementNS(NS, 'polygon');
-    hd.setAttribute('points', `${x2 - ux * .6},${y2 - uy * .6} ${tx - uy * 2.3},${ty + ux * 2.3} ${tx + uy * 2.3},${ty - ux * 2.3}`);
-    g.append(ln, hd);
-    arrowsEl.appendChild(g);
-  }
-}
+function drawArrows(list){ drawArrowsTo(arrowsEl, list); }
 
 function renderEngine(){
   if (!AN) return;
@@ -1933,14 +2330,16 @@ function resultTag(){
   if (m) return m[1] === 'White' ? '1-0' : '0-1';
   m = s.match(/(White|Black) (resigned|ran out of time)/);
   if (m) return m[1] === 'White' ? '0-1' : '1-0';
-  if (/Draw/.test(s)) return '1/2-1/2';
+  if (/Draw/.test(s) || (over && /\bDraw\b/.test(statusEl.textContent))) return '1/2-1/2';
   return '*';
 }
-function analyzeCurrentGame(){
+async function analyzeCurrentGame(){
   if (!log.length) return;
-  if (mode === 'net' && netReady && !over && !confirm('Leave this online game to analyze it?')) return;
-  const names = mode === 'cpu' ? (human === 'w' ? ['You', 'Computer'] : ['Computer', 'You'])
-              : mode === 'net' ? (human === 'w' ? ['You', 'Opponent'] : ['Opponent', 'You']) : ['White', 'Black'];
+  if (mode === 'net' && netReady && !over){
+    const ok = await confirmDialog({title:'Leave this online game?', text:'Analyzing disconnects you from your opponent.', ok:'Leave and analyze', cancel:'Stay', danger:true});
+    if (!ok) return;
+  }
+  const names = playerNames();
   const src = {moves:log.map(e => e.move), start:initial(), flipped, hero:(mode === 'cpu' || mode === 'net') ? human : null,
                meta:{white:names[0], black:names[1], result:resultTag()}};
   mode = 'ana'; modeSel.value = 'ana';
@@ -2062,7 +2461,7 @@ $('nFirst').onclick = () => AN && anaGo(AN.root);
 $('nPrev').onclick = () => AN && AN.node.parent && anaGo(AN.node.parent);
 $('nNext').onclick = () => AN && AN.node.kids.length && anaGo(AN.node.kids[0]);
 $('nLast').onclick = () => { if (!AN) return; let n = AN.node; while (n.kids.length) n = n.kids[0]; if (n !== AN.node) anaGo(n); };
-$('nFlip').onclick = () => { flipped = !flipped; render(); if (AN) renderEngine(); };
+$('nFlip').onclick = flipBoard;
 $('delBtn').onclick = () => AN && anaDelete();
 $('boardResetBtn').onclick = () => anaStart(null);
 revBtn.onclick = startReview;
@@ -2078,7 +2477,7 @@ $('impCopy').onclick = () => {
   const t = toPGN();
   pgnText.value = t;
   const fallback = () => { pgnText.focus(); pgnText.select(); impMsg.textContent = 'Press Ctrl+C (or Cmd+C) to copy the selected text.'; };
-  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(() => { impMsg.textContent = 'Copied.'; }, fallback);
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(() => { impMsg.textContent = 'Copied.'; toast('PGN copied.'); }, fallback);
   else fallback();
 };
 $('anaBtn').onclick = analyzeCurrentGame;
@@ -2094,22 +2493,318 @@ window.addEventListener('keydown', e => {
   else if (e.key === 'ArrowDown' || e.key === 'End'){ e.preventDefault(); $('nLast').click(); }
 });
 
+// ===== layout, popups, game history and saved games =====
+const panelEl = $('panel'), drawerBtn = $('drawerBtn'), goDlg = $('goDlg'), histDlg = $('histDlg');
+const GAMES_KEY = 'chessfile.games', SAVE_GAME = 'chessfile.save';
+let lastUI = {side:'w'}, offerOut = null, incoming = null;
+
+// ----- focus mode, full screen, mobile drawer -----
+function setFocus(on){
+  focusOn = on;
+  document.documentElement.classList.toggle('focus', on);
+  syncLayout(); closeDrawer();
+  if (on) toast('Focus mode. Press Z or Esc to bring everything back.', {ms:2600});
+}
+function toggleFullscreen(){
+  const d = document;
+  if (!d.fullscreenEnabled){ toast('Full screen is not available in this browser.'); return; }
+  if (d.fullscreenElement) d.exitFullscreen();
+  else d.documentElement.requestFullscreen().catch(() => toast('The browser blocked full screen.'));
+}
+function setDrawer(open){
+  panelEl.classList.toggle('open', open);
+  drawerBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+function closeDrawer(){ if (panelEl.classList.contains('open')) setDrawer(false); }
+function flipBoard(){ flipped = !flipped; render(); if (mode === 'ana' && AN) renderEngine(); }
+const anyModalOpen = () => [settingsEl, impDlg, promoEl, cfmDlg, goDlg, histDlg].some(d => !d.hidden);
+drawerBtn.onclick = () => setDrawer(!panelEl.classList.contains('open'));
+$('focusBtn').onclick = () => setFocus(!focusOn);
+$('focusBtn2').onclick = () => { closeSettings(); setFocus(true); };
+$('focusExit').onclick = () => setFocus(false);
+$('fsBtn').hidden = !document.fullscreenEnabled;
+$('fsBtn').onclick = toggleFullscreen;
+window.addEventListener('keydown', e => {
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.key === 'Escape'){
+    if (cfmAbort){ cfmAbort(); return; }
+    if (!goDlg.hidden){ goDlg.hidden = true; return; }
+    if (!histDlg.hidden){ histDlg.hidden = true; return; }
+    if (focusOn && !anyModalOpen()) setFocus(false);
+    return;
+  }
+  const t = e.target;
+  if (t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) return;
+  if (anyModalOpen()) return;
+  if (e.key === 'z' || e.key === 'Z') setFocus(!focusOn);
+  else if (e.key === 'f' || e.key === 'F') flipBoard();
+});
+
+// ----- guards: ask before throwing a game away -----
+const inProgress = () => !over && ((mode === 'cpu' || mode === 'two') ? log.length >= 2 : (mode === 'net' && netReady));
+function guard(proceed, revert, text){
+  if (!inProgress()) return proceed();
+  confirmDialog({title:'Leave this game?', text:text || 'The game in progress will be lost.', ok:'Leave', cancel:'Keep playing', danger:true})
+    .then(ok => ok ? proceed() : (revert && revert()));
+}
+
+// ----- names, PGN and history -----
+const levelName = () => ['Casual', 'Club', 'Strong'][+levelSel.value] || 'Club';
+const tcLabel = t => !t.min ? 'Unlimited' : `${t.min} min${t.inc ? ' + ' + t.inc + ' s' : ''}`;
+function playerNames(){
+  if (mode === 'cpu') return human === 'w' ? ['You', 'Computer'] : ['Computer', 'You'];
+  if (mode === 'net') return human === 'w' ? ['You', 'Opponent'] : ['Opponent', 'You'];
+  return ['White', 'Black'];
+}
+function pgnString(meta, tokens, res){
+  const d = new Date().toISOString().slice(0, 10).replace(/-/g, '.');
+  const hdr = [['Event', 'Casual game'], ['Site', 'chess.html'], ['Date', d], ['White', meta.white], ['Black', meta.black], ['Result', res]];
+  let out = hdr.map(([k, v]) => `[${k} "${String(v).replace(/"/g, "'")}"]`).join('\n') + '\n\n';
+  let line = '';
+  for (const t of tokens.concat([res])){
+    if ((line + ' ' + t).trim().length > 80){ out += line + '\n'; line = t; } else line = (line + ' ' + t).trim();
+  }
+  return out + line + '\n';
+}
+function logPGN(names, res){
+  const toks = [];
+  log.forEach((e, i) => {
+    if (e.prev.turn === 'w') toks.push(e.prev.full + '.'); else if (i === 0) toks.push(e.prev.full + '...');
+    toks.push(e.san);
+  });
+  return pgnString({white:names[0], black:names[1]}, toks, res);
+}
+function recordGame(){
+  if (log.length < 2) return;
+  const names = playerNames(), res = resultTag();
+  const rec = {
+    id:Date.now().toString(36) + Math.random().toString(36).slice(2, 6), t:Date.now(), mode,
+    you:(mode === 'cpu' || mode === 'net') ? human : null, white:names[0], black:names[1], result:res, plies:log.length,
+    tc:{min:tc.min, inc:tc.inc},
+    opp: mode === 'cpu' ? 'Computer (' + levelName() + ')' : mode === 'net' ? 'Online friend' : 'Two players',
+    pgn:logPGN(names, res)
+  };
+  const g = lsGet(GAMES_KEY, []);
+  g.unshift(rec);
+  lsSet(GAMES_KEY, g.slice(0, 100));
+}
+function onGameEnd(){
+  goDone = true;
+  const seq = gameSeq;
+  recordGame();
+  lsDel(SAVE_GAME);
+  if (S.goCard) setTimeout(() => { if (seq === gameSeq && over) showGameOver(); }, 500);
+}
+function showGameOver(){
+  const res = resultTag(), you = (mode === 'cpu' || mode === 'net') ? human : null;
+  let title;
+  if (res === '1/2-1/2') title = 'Draw';
+  else if (res === '*') title = 'Game over';
+  else if (you) title = ((res === '1-0') === (you === 'w')) ? 'You won' : 'You lost';
+  else title = res === '1-0' ? 'White wins' : 'Black wins';
+  $('goTitle').textContent = title;
+  $('goText').textContent = statusEl.textContent;
+  $('goNew').hidden = mode === 'net';
+  goDlg.hidden = false;
+  $('goRematch').focus();
+}
+$('goRematch').onclick = () => {
+  goDlg.hidden = true;
+  if (mode === 'net') rematch();
+  else { if (mode === 'cpu'){ human = human === 'w' ? 'b' : 'w'; sideSel.value = human; } newGame(); }
+};
+$('goAnalyze').onclick = () => { goDlg.hidden = true; analyzeCurrentGame(); };
+$('goNew').onclick = () => { goDlg.hidden = true; newGame(); };
+$('goClose').onclick = () => { goDlg.hidden = true; };
+goDlg.addEventListener('click', e => { if (e.target === goDlg) goDlg.hidden = true; });
+
+function copyText(text, okMsg){
+  const fail = () => toast('Could not copy. Select the text and copy it yourself.');
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(() => toast(okMsg || 'Copied.'), fail);
+  else fail();
+}
+function analyzeRecord(rec){
+  histDlg.hidden = true;
+  mode = 'ana'; modeSel.value = 'ana'; document.body.className = 'mode-ana';
+  teardownNet(); puz = null; ck = null; newBtn.textContent = 'New game';
+  const r = anaLoadText(rec.pgn);
+  if (!r.ok || !AN){ toast('Could not open that game.'); return; }
+  AN.hero = rec.you || null; flipped = rec.you === 'b';
+  update(); startReview();
+}
+function renderHist(){
+  const g = lsGet(GAMES_KEY, []);
+  let w = 0, d = 0, l = 0;
+  for (const r of g){
+    if (!r.you || r.result === '*') continue;
+    if (r.result === '1/2-1/2') d++; else if ((r.result === '1-0') === (r.you === 'w')) w++; else l++;
+  }
+  const grid = $('statsGrid'); grid.innerHTML = '';
+  for (const [k, v] of [['Games', g.length], ['Won', w], ['Drawn', d], ['Lost', l], ['Puzzle rating', puzStats.rating],
+                        ['Best streak', puzStats.best], ['Puzzles solved', puzStats.solved], ['Attempts', puzStats.attempts]]){
+    const c = document.createElement('div'); c.className = 'stat';
+    const b = document.createElement('b'); b.textContent = String(v);
+    const sp = document.createElement('span'); sp.textContent = k;
+    c.append(b, sp); grid.appendChild(c);
+  }
+  const list = $('histList'); list.innerHTML = '';
+  if (!g.length){
+    const e = document.createElement('div'); e.className = 'histEmpty';
+    e.textContent = 'Finished games show up here so you can review them later.';
+    list.appendChild(e); return;
+  }
+  for (const r of g){
+    const row = document.createElement('div'); row.className = 'histRow';
+    const left = document.createElement('div');
+    const t1 = document.createElement('div'); t1.textContent = `${r.white} vs ${r.black}`;
+    const t2 = document.createElement('div'); t2.className = 'meta';
+    t2.textContent = `${new Date(r.t).toLocaleDateString()} \u00B7 ${r.opp} \u00B7 ${tcLabel(r.tc || {min:0, inc:0})} \u00B7 ${Math.ceil(r.plies / 2)} moves`;
+    left.append(t1, t2);
+    const res = document.createElement('div'); res.className = 'res';
+    if (r.you && r.result !== '*'){
+      const won = r.result !== '1/2-1/2' && (r.result === '1-0') === (r.you === 'w');
+      res.textContent = r.result === '1/2-1/2' ? 'Draw' : won ? 'Won' : 'Lost';
+      res.classList.add(r.result === '1/2-1/2' ? 'd' : won ? 'w' : 'l');
+    } else res.textContent = r.result === '*' ? 'Unfinished' : r.result;
+    const ra = document.createElement('div'); ra.className = 'ra';
+    for (const [lab, act] of [['Analyze', 'an'], ['Copy PGN', 'cp'], ['Delete', 'del']]){
+      const b = document.createElement('button'); b.textContent = lab; b.dataset.act = act; b.dataset.id = r.id; ra.appendChild(b);
+    }
+    row.append(left, res, ra); list.appendChild(row);
+  }
+}
+function openHist(){ renderHist(); histDlg.hidden = false; }
+$('statsBtn').onclick = openHist;
+$('histClose').onclick = () => { histDlg.hidden = true; };
+histDlg.addEventListener('click', e => { if (e.target === histDlg) histDlg.hidden = true; });
+$('histList').addEventListener('click', e => {
+  const b = e.target.closest ? e.target.closest('button') : null;
+  if (!b) return;
+  const g = lsGet(GAMES_KEY, []), rec = g.find(x => x.id === b.dataset.id);
+  if (!rec) return;
+  if (b.dataset.act === 'an') analyzeRecord(rec);
+  else if (b.dataset.act === 'cp') copyText(rec.pgn, 'PGN copied.');
+  else if (b.dataset.act === 'del'){ lsSet(GAMES_KEY, g.filter(x => x.id !== rec.id)); renderHist(); }
+});
+$('histExport').onclick = () => {
+  const g = lsGet(GAMES_KEY, []);
+  if (!g.length){ toast('There are no games to copy yet.'); return; }
+  copyText(g.map(x => x.pgn).join('\n'), `Copied ${g.length} games as PGN.`);
+};
+$('histClear').onclick = () => {
+  if (!lsGet(GAMES_KEY, []).length) return;
+  confirmDialog({title:'Clear your game history?', text:'This removes every saved game from this browser.', ok:'Clear it', danger:true})
+    .then(ok => { if (ok){ lsDel(GAMES_KEY); renderHist(); } });
+};
+
+// ----- resume an unfinished game -----
+function saveGame(){
+  if ((mode !== 'cpu' && mode !== 'two') || over || !log.length) return;
+  lsSet(SAVE_GAME, {mode, human, level:levelSel.value, tc:{min:tc.min, inc:tc.inc}, moves:log.map(e => uci(e.move)),
+                    ck: ck ? {w:ckRemain('w'), b:ckRemain('b')} : null, t:Date.now()});
+}
+function offerResume(sv){
+  const what = sv.mode === 'cpu' ? `${sv.human === 'w' ? 'White' : 'Black'} against the computer` : 'a two-player game';
+  confirmDialog({title:'Resume your game?', text:`You have an unfinished game (${what}, ${Math.ceil(sv.moves.length / 2)} move${sv.moves.length <= 2 ? '' : 's'} in).`, ok:'Resume', cancel:'Discard'})
+    .then(ok => { if (ok) resumeGame(sv); else lsDel(SAVE_GAME); });
+}
+function resumeGame(sv){
+  modeSel.value = sv.mode; sideSel.value = sv.human === 'b' ? 'b' : 'w';
+  if (sv.level != null) levelSel.value = sv.level;
+  setTCUI(sv.tc || {min:0, inc:0});
+  newGame();
+  for (const u of sv.moves){
+    const m = legalMoves.find(x => uci(x) === u);
+    if (!m) break;
+    pushMove(m);
+  }
+  gen++; animMove = null; premove = null;
+  if (ck && sv.ck){ ck.w = sv.ck.w; ck.b = sv.ck.b; }
+  update();
+  if (ck && log.length){ ck.side = cur.turn; ck.t = performance.now(); ck.grace = 0; }
+  maybeComputer();
+  saveGame();
+  toast('Game resumed.');
+}
+
+// ----- online extras: draw offers and takeback requests -----
+const netGate = () => mode === 'net' && netReady && net && net.conn && net.conn.open && !over && !result;
+function incomingClose(sendNo){
+  if (!incoming) return;
+  incoming.toast.close();
+  if (sendNo && net && net.conn && net.conn.open) net.conn.send({t: incoming.type === 'draw' ? 'drawNo' : 'tbNo'});
+  incoming = null;
+}
+function offerDraw(){
+  if (!netGate() || offerOut) return;
+  if (log.length < 2){ toast('Play a couple of moves first.'); return; }
+  offerOut = 'draw'; net.conn.send({t:'draw'});
+  toast('Draw offered. Waiting for your opponent.');
+  setTimeout(() => { if (offerOut === 'draw') offerOut = null; }, 30000);
+}
+function askTakeback(){
+  if (!netGate() || offerOut) return;
+  if (!log.some(e => e.prev.turn === human)){ toast('You have not moved yet.'); return; }
+  offerOut = 'tb'; net.conn.send({t:'tb', n:log.length});
+  toast('Takeback requested.');
+  setTimeout(() => { if (offerOut === 'tb') offerOut = null; }, 30000);
+}
+function undoPlies(k){
+  if (log.length < k) return false;
+  let snap = null;
+  for (let j = 0; j < k; j++){ const e = log.pop(); cur = e.prev; lastMove = e.lastBefore; keys.pop(); snap = e.ck; }
+  sel = null; premove = null; clearMarks(); legalMoves = genLegal(cur);
+  if (ck && snap){ ck.w = snap.w; ck.b = snap.b; ck.side = log.length ? cur.turn : null; ck.t = performance.now(); ck.grace = 0; }
+  gen++; animMove = null;
+  update();
+  return true;
+}
+function applyTakeback(requester){
+  if (!undoPlies(cur.turn === requester ? 2 : 1)) toast('Nothing to take back.');
+}
+function netExtras(d){
+  const opp = human === 'w' ? 'b' : 'w';
+  if (d.t === 'draw'){
+    if (!netGate()) return;
+    incomingClose(false);
+    incoming = {type:'draw', toast: toast('Your opponent offers a draw.', {actions:[
+      {label:'Accept', primary:true, fn:() => { incoming = null; if (!netGate()) return; result = 'Draw by agreement.'; net.conn.send({t:'drawAcc'}); update(); }},
+      {label:'Decline', fn:() => { incoming = null; if (net && net.conn && net.conn.open) net.conn.send({t:'drawNo'}); }}]})};
+  } else if (d.t === 'drawAcc'){
+    if (offerOut === 'draw' && netGate()){ offerOut = null; result = 'Draw by agreement.'; update(); }
+  } else if (d.t === 'drawNo'){
+    if (offerOut === 'draw'){ offerOut = null; toast('Your opponent declined the draw.'); }
+  } else if (d.t === 'tb'){
+    if (!netGate() || d.n !== log.length) return;
+    incomingClose(false);
+    incoming = {type:'tb', toast: toast('Your opponent asks to take back a move.', {actions:[
+      {label:'Allow', primary:true, fn:() => { incoming = null; if (!netGate() || d.n !== log.length) return; net.conn.send({t:'tbAcc', n:log.length}); applyTakeback(opp); }},
+      {label:'Deny', fn:() => { incoming = null; if (net && net.conn && net.conn.open) net.conn.send({t:'tbNo'}); }}]})};
+  } else if (d.t === 'tbAcc'){
+    if (offerOut === 'tb' && netGate() && d.n === log.length){ offerOut = null; applyTakeback(human); toast('Takeback accepted.'); }
+  } else if (d.t === 'tbNo'){
+    if (offerOut === 'tb'){ offerOut = null; toast('Takeback declined.'); }
+  }
+}
+$('drawBtn').onclick = offerDraw;
+$('tbBtn').onclick = askTakeback;
+
 // ----- controls -----
-newBtn.onclick = () => mode === 'net' ? rematch() : mode === 'puz' ? nextPuzzle() : newGame();
+newBtn.onclick = () => mode === 'net' ? rematch() : mode === 'puz' ? nextPuzzle() : guard(newGame, null, 'Start a new game? The current one will be lost.');
 $('hintBtn').onclick = puzHint;
 $('solveBtn').onclick = puzSolve;
 diffSel.onchange = () => { if (mode === 'puz') nextPuzzle(); };
 function tcChanged(){
-  if (mode === 'cpu' || mode === 'two') newGame();
+  if (mode === 'cpu' || mode === 'two') guard(newGame, () => setTCUI(tc));
   else if (mode === 'net' && net && net.role === 'host' && !netReady){ tc = readTC(); resetBoard(); }
 }
 tcSel.onchange = () => { tcCustom.hidden = tcSel.value !== 'custom'; tcChanged(); };
 tcMin.onchange = tcChanged; tcInc.onchange = tcChanged;
 $('undoBtn').onclick = undo;
-$('flipBtn').onclick = () => { flipped = !flipped; render(); if (mode === 'ana' && AN) renderEngine(); };
-$('resignBtn').onclick = resign;
-modeSel.onchange = newGame;
-sideSel.onchange = () => { if (mode !== 'net') newGame(); };
+$('flipBtn').onclick = flipBoard;
+$('resignBtn').onclick = () => confirmDialog({title:'Resign this game?', text:'Your opponent will be awarded the win.', ok:'Resign', danger:true}).then(ok => { if (ok) resign(); });
+modeSel.onchange = () => guard(newGame, () => { modeSel.value = mode; }, mode === 'net' ? 'Leaving will disconnect you from your opponent.' : undefined);
+sideSel.onchange = () => { if (mode !== 'net') guard(newGame, () => { sideSel.value = lastUI.side; }); };
 $('createBtn').onclick = createGame;
 $('joinBtn').onclick = () => joinGame(codeIn.value);
 codeIn.addEventListener('keydown', e => { if (e.key === 'Enter') joinGame(codeIn.value); });
@@ -2153,7 +2848,7 @@ function showInvite(code){
   b.onclick = () => {
     const t = inviteText(code);
     (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(
-      () => { b.textContent = 'Copied'; }, () => { b.textContent = 'Select the code'; });
+      () => { b.textContent = 'Copied'; toast('Invite copied.'); }, () => { b.textContent = 'Select the code'; });
   };
   const p = document.createElement('div');
   p.textContent = 'Send this to your friend. They choose \u201cOnline friend\u201d, enter the code, and press Join.';
@@ -2219,7 +2914,7 @@ function attach(conn){
     if (mine.role === 'host'){
       netReady = true; netNote = '';
       conn.send({t:'hello', guest: human === 'w' ? 'b' : 'w', tc});
-      lockTC(true);
+      lockTC(true); toast('Your opponent connected.');
       setInfo(`Connected. You play ${colorName(human)}.`);
       update();
     }
@@ -2230,6 +2925,7 @@ function attach(conn){
     if (net !== mine) return;
     netReady = false; wantRe = oppRe = false; ckStop(); lockTC(false);
     netNote = 'Your opponent disconnected.';
+    toast('Your opponent disconnected.', {ms:5000}); incomingClose(false); offerOut = null;
     setInfo('Disconnected. Create a new game or join another.');
     update();
   });
@@ -2247,6 +2943,7 @@ function onNetData(d){
     netReady = true; netNote = '';
     resetBoard();
     setInfo(`Connected. You play ${colorName(human)}.`);
+    toast('Connected. You play ' + colorName(human) + '.');
   } else if (d.t === 'full'){
     netFail('That game already has two players.');
   } else if (d.t === 'move'){
@@ -2263,8 +2960,11 @@ function onNetData(d){
   } else if (d.t === 'rematch'){
     oppRe = true;
     if (wantRe) startRematch();
-    else { setInfo('Your opponent wants a rematch. Press Rematch to accept.'); }
-  }
+    else {
+      setInfo('Your opponent wants a rematch. Press Rematch to accept.');
+      toast('Your opponent wants a rematch.', {actions:[{label:'Accept', primary:true, fn:rematch}]});
+    }
+  } else netExtras(d);
 }
 
 function resign(){
@@ -2298,7 +2998,18 @@ const puzWrap = $('puzWrap');
 const BANDS = [[0, 999], [1000, 1499], [1500, 1999], [2000, 9999]];
 const HIDE_THEMES = new Set(['short', 'long', 'veryLong', 'oneMove']);
 const puzSeen = new Set();
-const puzStats = {solved:0, streak:0};
+const PUZ_KEY = 'chessfile.puz';
+const puzStats = Object.assign({solved:0, streak:0, best:0, rating:1500, attempts:0}, lsGet(PUZ_KEY, {}));
+for (const k of ['solved', 'streak', 'best', 'rating', 'attempts']) if (!Number.isFinite(+puzStats[k])) puzStats[k] = k === 'rating' ? 1500 : 0;
+const savePuz = () => lsSet(PUZ_KEY, puzStats);
+function puzRate(score){
+  if (!puz || puz.rated) return;
+  puz.rated = true;
+  const exp = 1 / (1 + Math.pow(10, (puz.p.rating - puzStats.rating) / 400));
+  const delta = Math.round((puzStats.attempts < 20 ? 40 : 24) * (score - exp));
+  puzStats.rating = Math.max(400, puzStats.rating + delta);
+  puzStats.attempts++; puz.delta = delta; savePuz();
+}
 let puz = null;
 
 const uciSq = (u, k) => FILES.indexOf(u[k]) + (8 - +u[k + 1]) * 8;
@@ -2311,9 +3022,10 @@ function themeLabel(t){
 const puzPrompt = () => `${colorName(puz.solver)} to move. Find the best move.`;
 
 function nextPuzzle(){
-  if (puz && !puz.done) puzTaint();
-  const [lo, hi] = BANDS[+diffSel.value];
-  const inBand = PUZ.filter(p => p.rating >= lo && p.rating <= hi);
+  if (puz && !puz.done && (puz.misses || puz.idx > 1)) puzTaint(true);
+  const [lo, hi] = +diffSel.value === 4 ? [puzStats.rating - 200, puzStats.rating + 200] : BANDS[+diffSel.value];
+  let inBand = PUZ.filter(p => p.rating >= lo && p.rating <= hi);
+  if (!inBand.length) inBand = PUZ.slice().sort((a, b) => Math.abs(a.rating - puzStats.rating) - Math.abs(b.rating - puzStats.rating)).slice(0, 60);
   let pool = inBand.filter(p => !puzSeen.has(p.id));
   if (!pool.length){ inBand.forEach(p => puzSeen.delete(p.id)); pool = inBand; }
   const p = pool[Math.floor(Math.random() * pool.length)];
@@ -2323,9 +3035,10 @@ function nextPuzzle(){
 
 function loadPuzzle(p){
   gen++; busy = false; result = null; ck = null;
+  gameSeq++; premove = null; clearMarks();
   cur = fromFen(p.fen); log = []; keys = [posKey(cur)]; lastMove = null; sel = null;
   legalMoves = genLegal(cur);
-  puz = {p, idx:0, solver: cur.turn === 'w' ? 'b' : 'w', done:false, tainted:false, misses:0, hint:0, busy:true, cls:'', msg:'Watch your opponent\u2019s move\u2026'};
+  puz = {p, idx:0, solver: cur.turn === 'w' ? 'b' : 'w', done:false, tainted:false, rated:false, delta:null, misses:0, hint:0, busy:true, cls:'', msg:'Watch your opponent\u2019s move\u2026'};
   flipped = puz.solver === 'b';
   update();
   const my = gen;
@@ -2340,9 +3053,11 @@ function playPuz(i){
   if (m) doMove(m, false, true);
 }
 
-function puzTaint(){
+function puzTaint(noRate){
   if (puz.tainted) return;
   puz.tainted = true; puzStats.streak = 0;
+  if (!noRate) puzRate(0);
+  savePuz();
 }
 
 function puzTry(m){
@@ -2374,7 +3089,7 @@ function finishPuzzle(revealed){
   puz.done = true; puz.busy = false; puz.hint = 0; puz.cls = 'over';
   if (revealed) puz.msg = 'Solution shown. Try the next one.';
   else if (puz.tainted) puz.msg = 'Solved, with some help.';
-  else { puzStats.solved++; puzStats.streak++; puz.msg = 'Solved!'; }
+  else { puzStats.solved++; puzStats.streak++; puzStats.best = Math.max(puzStats.best, puzStats.streak); puzRate(1); savePuz(); puz.msg = 'Solved!'; }
   update();
 }
 
@@ -2417,18 +3132,23 @@ function renderPuz(){
   } else {
     line('Themes', 'shown when you finish');
   }
-  line('Solved', `${puzStats.solved}, streak ${puzStats.streak}`);
+  line('Your rating', puzStats.rating + (puz.delta != null ? ` (${puz.delta >= 0 ? '+' : ''}${puz.delta})` : ''));
+  line('Solved', `${puzStats.solved}, streak ${puzStats.streak} (best ${puzStats.best})`);
   const src = document.createElement('p'); src.className = 'src';
   src.textContent = 'Puzzles come from the Lichess open puzzle database (CC0). A solve counts only if you use no hints and make no wrong moves.';
   puzWrap.appendChild(src);
 }
 
 applySettings();
+const startSave = lsGet(SAVE_GAME, null);
 newGame();
+booting = false;
 const joinMatch = location.hash.match(/join=([A-Za-z0-9]{4,8})/);
 if (joinMatch){
   modeSel.value = 'net'; newGame();
   joinGame(joinMatch[1]);
+} else if (startSave && Array.isArray(startSave.moves) && startSave.moves.length && (startSave.mode === 'cpu' || startSave.mode === 'two')){
+  offerResume(startSave);
 }
 </script>
 </body>

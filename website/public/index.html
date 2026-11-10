@@ -5,60 +5,130 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Study Hub</title>
 <link id="fav" rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%234f7cff'/%3E%3Ctext x='16' y='23' font-size='20' text-anchor='middle' fill='white' font-family='Arial' font-weight='700'%3ES%3C/text%3E%3C/svg%3E">
+<script>try{if(localStorage.getItem("sh_pw"))document.documentElement.classList.add("locked")}catch(e){}</script>
 <style>
 :root{
   --bg:#0f1218; --panel:#171b24; --panel2:#1e2330; --line:#2a3142;
-  --text:#e8ebf2; --mute:#8c95a8; --accent:#4f7cff; --accent2:#7aa0ff; --danger:#ff5d6c;
+  --text:#e8ebf2; --mute:#8c95a8; --accent:#4f7cff; --danger:#ff5d6c;
+  --accent2:color-mix(in srgb,var(--accent) 78%,#fff);
 }
 :root[data-theme="light"]{
   --bg:#f4f6fb; --panel:#ffffff; --panel2:#eef1f8; --line:#dce1ee;
-  --text:#1b2030; --mute:#657089; --accent:#3a63e8; --accent2:#2a4fc8;
+  --text:#1b2030; --mute:#657089; --accent:#3a63e8;
+}
+:root[data-theme="doc"]{
+  --bg:#ffffff; --panel:#ffffff; --panel2:#f1f3f4; --line:#dadce0;
+  --text:#202124; --mute:#5f6368; --accent:#1a73e8;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
 body{background:var(--bg);color:var(--text);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;overflow-x:hidden}
 button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 input,select{font:inherit;color:inherit}
+:root[data-theme="doc"] body{font-family:Arial,Helvetica,sans-serif}
+
+/* lock screen */
+#lock{position:fixed;inset:0;z-index:300;display:none;place-items:center;background:var(--bg);padding:16px}
+html.locked #lock{display:grid}
+html.locked body > *:not(#lock):not(script){display:none!important}
+.lockbox{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:30px 28px;width:min(360px,100%);text-align:center}
+.lockbox .big{width:54px;height:54px;border-radius:14px;margin:0 auto 14px;background:linear-gradient(135deg,var(--accent),color-mix(in srgb,var(--accent) 45%,#8a5cff));display:grid;place-items:center;color:#fff;font-size:26px;font-weight:700}
+.lockbox h2{font-size:18px;margin-bottom:4px}
+.lockbox p{color:var(--mute);font-size:13px;margin-bottom:16px}
+.lockbox input{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:11px 14px;outline:none;text-align:center;margin-bottom:10px}
+.lockbox input:focus{border-color:var(--accent)}
+.lockbox .btn{width:100%;justify-content:center}
+#lerr{color:var(--danger);font-size:13px;min-height:18px;margin-top:8px}
+.shake{animation:shake .35s}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
 
 /* header */
 header{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
-.bar{max-width:1300px;margin:auto;padding:12px 18px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.bar{max-width:1300px;margin:auto;padding:12px 18px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px;letter-spacing:.2px;margin-right:6px}
-.logo i{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#8a5cff);display:grid;place-items:center;color:#fff;font-style:normal;font-size:16px}
-.search{flex:1;min-width:180px;position:relative}
+.logo i{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--accent),color-mix(in srgb,var(--accent) 45%,#8a5cff));display:grid;place-items:center;color:#fff;font-style:normal;font-size:16px}
+:root[data-theme="doc"] .logo i{display:none}
+.search{flex:1;min-width:170px;position:relative}
 .search input{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 14px 10px 38px;outline:none}
 .search input:focus{border-color:var(--accent)}
 .search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;fill:none;stroke:var(--mute);stroke-width:2}
-.btn{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 13px;display:inline-flex;gap:7px;align-items:center;transition:.15s}
+.btn{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 13px;display:inline-flex;gap:7px;align-items:center;transition:.15s;white-space:nowrap}
 .btn:hover{border-color:var(--accent);background:var(--panel2)}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
 .btn.primary:hover{background:var(--accent2)}
+.btn.sm{padding:6px 10px;font-size:13px}
 .tabs{max-width:1300px;margin:auto;padding:0 18px 12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.tab{padding:6px 14px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--mute)}
+.tab{padding:6px 14px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--mute);transition:.15s}
+.tab:hover{border-color:var(--accent)}
 .tab.on{background:var(--accent);border-color:var(--accent);color:#fff}
 .spacer{flex:1}
 select{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:7px 10px;outline:none}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--panel)}
+.seg button{padding:6px 10px;color:var(--mute);font-size:14px;line-height:1}
+.seg button.on{background:var(--accent);color:#fff}
 
 /* grid */
 main{max-width:1300px;margin:auto;padding:18px}
 .count{color:var(--mute);margin-bottom:14px;font-size:13px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:16px}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;cursor:pointer;position:relative;transition:transform .15s,border-color .15s,box-shadow .15s;text-align:left;display:block}
-.card:hover,.card:focus-visible{transform:translateY(-3px);border-color:var(--accent);box-shadow:0 8px 24px rgba(0,0,0,.25);outline:none}
-.thumb{aspect-ratio:4/3;background:var(--panel2);position:relative;overflow:hidden}
-.thumb img{position:absolute;inset:0;z-index:1;width:100%;height:100%;object-fit:cover;display:block}
+.grid{display:grid;gap:16px}
+.grid[data-view="large"]{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}
+.grid[data-view="compact"]{grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:10px}
+.grid[data-view="list"]{grid-template-columns:1fr;gap:6px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;cursor:pointer;position:relative;transition:transform .18s,border-color .18s,box-shadow .18s;text-align:left;display:block}
+.card:hover,.card:focus-visible{transform:translateY(-4px);border-color:var(--accent);box-shadow:0 10px 28px rgba(0,0,0,.28),0 0 0 1px color-mix(in srgb,var(--accent) 40%,transparent);outline:none}
+.grid.anim .card{animation:cin .38s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i,0) * 22ms)}
+@keyframes cin{from{opacity:0;transform:translateY(12px) scale(.97)}to{opacity:1;transform:none}}
+.thumb{aspect-ratio:16/10;background:var(--panel2);position:relative;overflow:hidden}
+.thumb img{position:absolute;inset:0;z-index:1;width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s}
+.card:hover .thumb img{transform:scale(1.06)}
+.thumb::after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.22) 50%,transparent 65%);transform:translateX(-130%);transition:transform .7s}
+.card:hover .thumb::after{transform:translateX(130%)}
 .thumb .ph{position:absolute;inset:0;display:grid;place-items:center;font-size:42px;font-weight:700;color:var(--mute);background:linear-gradient(135deg,var(--panel2),var(--panel))}
-.meta{padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:8px}
-.meta b{font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.star{position:absolute;top:8px;right:8px;width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,.55);display:grid;place-items:center;z-index:2;opacity:0;transition:.15s}
+.mt{padding:10px 12px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.mt b{font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mt small{color:var(--mute);font-size:12px}
+.star{position:absolute;top:8px;right:8px;width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,.55);display:grid;place-items:center;z-index:4;opacity:0;transition:.15s}
 .card:hover .star,.star.on,.card:focus-within .star{opacity:1}
 .star svg{width:17px;height:17px;fill:none;stroke:#fff;stroke-width:2}
 .star.on svg{fill:#ffc94a;stroke:#ffc94a}
+.ribbon{position:absolute;top:10px;left:-1px;background:var(--accent);color:#fff;font-size:11px;font-weight:700;padding:3px 10px 3px 8px;border-radius:0 999px 999px 0;z-index:4;letter-spacing:.5px;box-shadow:0 2px 8px rgba(0,0,0,.3)}
 .empty{text-align:center;color:var(--mute);padding:70px 10px}
+/* compact */
+.grid[data-view="compact"] .thumb{aspect-ratio:1/1}
+.grid[data-view="compact"] .mt{padding:7px 9px}
+.grid[data-view="compact"] .mt b{font-size:13px}
+.grid[data-view="compact"] .mt small{display:none}
+.grid[data-view="compact"] .card{border-radius:11px}
+.grid[data-view="compact"] .star{width:26px;height:26px;top:5px;right:5px}
+.grid[data-view="compact"] .star svg{width:14px;height:14px}
+/* list */
+.grid[data-view="list"] .card{display:flex;align-items:center;gap:12px;padding:6px 12px 6px 6px;border-radius:10px}
+.grid[data-view="list"] .card:hover{transform:translateX(3px)}
+.grid[data-view="list"] .thumb{width:54px;height:54px;aspect-ratio:auto;flex:none;border-radius:8px}
+.grid[data-view="list"] .thumb .ph{font-size:20px}
+.grid[data-view="list"] .mt{flex:1;padding:0;flex-direction:row;align-items:center;gap:12px}
+.grid[data-view="list"] .mt b{flex:1}
+.grid[data-view="list"] .star{position:static;opacity:1;background:none;flex:none}
+.grid[data-view="list"] .star svg{stroke:var(--mute)}
+.grid[data-view="list"] .star.on svg{stroke:#ffc94a}
+.grid[data-view="list"] .ribbon{top:50%;left:62px;transform:translateY(-50%);border-radius:999px;padding:2px 8px}
+:root[data-theme="doc"] .thumb{display:none}
+:root[data-theme="doc"] .card{border-radius:6px;box-shadow:none!important}
+:root[data-theme="doc"] .card:hover{transform:none}
+:root[data-theme="doc"] .ribbon{position:static;transform:none;margin-right:8px}
+:root[data-theme="doc"] .mt b{color:var(--accent)}
+/* skeleton */
+.card.sk{pointer-events:none}
+.card.sk .thumb,.card.sk .bar1{background:linear-gradient(90deg,var(--panel2) 25%,var(--panel) 50%,var(--panel2) 75%);background-size:200% 100%;animation:shim 1.2s linear infinite}
+.card.sk .bar1{height:12px;border-radius:6px;width:70%;margin:12px}
+@keyframes shim{to{background-position:-200% 0}}
 
 /* viewer */
 #viewer{position:fixed;inset:0;background:var(--bg);z-index:50;display:none;flex-direction:column}
-#viewer.open{display:flex}
+#viewer.open{display:flex;animation:vin .24s cubic-bezier(.2,.8,.2,1)}
+#viewer.closing{display:flex;animation:vout .17s ease forwards;pointer-events:none}
+@keyframes vin{from{opacity:0;transform:scale(.985) translateY(10px)}to{opacity:1;transform:none}}
+@keyframes vout{to{opacity:0;transform:scale(.99) translateY(6px)}}
 .vbar{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--panel);border-bottom:1px solid var(--line)}
 .vbar h2{font-size:15px;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .vbar .btn{padding:7px 11px}
@@ -69,52 +139,101 @@ main{max-width:1300px;margin:auto;padding:18px}
 .spin{width:38px;height:38px;border-radius:50%;border:4px solid var(--line);border-top-color:var(--accent);animation:sp .8s linear infinite;margin:0 auto 14px}
 @keyframes sp{to{transform:rotate(360deg)}}
 
-/* settings */
-#settings{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.55);display:none;place-items:center;padding:16px}
-#settings.open{display:grid}
-.modal{background:var(--panel);border:1px solid var(--line);border-radius:16px;width:min(520px,100%);max-height:90vh;overflow:auto;padding:22px}
-.modal h3{margin-bottom:14px}
-.row{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+/* overlays (settings, stats) */
+.ov{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.55);display:none;place-items:center;padding:16px}
+.ov.open{display:grid;animation:fade .18s}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.modal{background:var(--panel);border:1px solid var(--line);border-radius:16px;width:min(560px,100%);max-height:90vh;overflow:auto;padding:22px;animation:pop .22s cubic-bezier(.2,.8,.2,1)}
+@keyframes pop{from{transform:translateY(14px) scale(.98);opacity:0}to{transform:none;opacity:1}}
+.modal h3{margin-bottom:4px;font-size:18px}
+.modal h4{margin:20px 0 10px;font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:var(--mute);border-top:1px solid var(--line);padding-top:16px}
+.modal h3 + h4{border-top:0;padding-top:0;margin-top:14px}
+.row{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
 .row label{font-size:13px;color:var(--mute)}
-.row input[type=text],.row select{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:9px 12px;outline:none}
+.row input[type=text],.row input[type=password],.row select{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:9px 12px;outline:none}
 .row input:focus{border-color:var(--accent)}
-.row .inline{display:flex;gap:8px;flex-wrap:wrap}
+.row .inline{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.check{display:flex;gap:8px;align-items:center;font-size:14px;color:var(--text)!important}
+.check input{width:auto}
 .hint{font-size:12px;color:var(--mute)}
 .modal .foot{display:flex;gap:8px;justify-content:flex-end;margin-top:6px}
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(30px);background:var(--panel);border:1px solid var(--line);padding:10px 16px;border-radius:10px;opacity:0;pointer-events:none;transition:.25s;z-index:99}
+.swatches{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.sw{width:28px;height:28px;border-radius:50%;border:2px solid transparent;outline:1px solid var(--line);transition:transform .15s}
+.sw:hover{transform:scale(1.12)}
+.sw.on{border-color:var(--bg);outline:2px solid var(--text)}
+.sw.auto{background:conic-gradient(#4f7cff,#2fb67c,#f0883e,#e5528f,#8a5cff,#4f7cff)}
+input[type=color]{width:34px;height:30px;padding:0;border:1px solid var(--line);border-radius:8px;background:none;cursor:pointer}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin:14px 0}
+.tile{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px}
+.tile b{display:block;font-size:22px}
+.tile span{color:var(--mute);font-size:12px}
+.barrow{display:grid;grid-template-columns:minmax(80px,170px) 1fr auto;gap:10px;align-items:center;margin:8px 0;font-size:13px}
+.barrow .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.barrow .track{height:10px;border-radius:99px;background:var(--panel2);overflow:hidden}
+.barrow .fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .5s}
+.barrow .v{color:var(--mute);min-width:52px;text-align:right}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(30px);background:var(--panel);border:1px solid var(--line);padding:10px 16px;border-radius:10px;opacity:0;pointer-events:none;transition:.25s;z-index:400}
 .toast.show{opacity:1;transform:translateX(-50%)}
-@media(max-width:560px){.grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}.logo span{display:none}}
+
+/* fake page (panic) */
+#fake{position:fixed;inset:0;z-index:250;background:#f8f9fa;color:#202124;display:none;overflow:auto;font-family:Arial,Helvetica,sans-serif;font-size:14px}
+#fake.on{display:block}
+#fake .top{display:flex;align-items:center;gap:12px;padding:8px 14px;background:#fff;border-bottom:1px solid #e0e0e0;position:sticky;top:0;z-index:2}
+#fake .ico{width:30px;height:38px;border-radius:4px;flex:none}
+#fake .ttl{font-size:18px;color:#202124}
+#fake .menus{display:flex;gap:14px;color:#444;font-size:13px;margin-top:2px}
+#fake .tool{display:flex;gap:14px;align-items:center;padding:6px 16px;background:#edf2fa;color:#444;font-size:13px;border-radius:999px;margin:8px 14px;width:max-content;max-width:calc(100% - 28px);overflow:hidden}
+#fake .page{background:#fff;width:min(816px,calc(100% - 24px));min-height:1056px;margin:18px auto;padding:72px 80px;box-shadow:0 1px 3px rgba(60,64,67,.3);line-height:1.55}
+#fake .page h1{font-size:26px;margin-bottom:18px;font-weight:400}
+#fake .page p{margin-bottom:14px}
+#fake .page ul{margin:0 0 14px 22px}
+#fake table{border-collapse:collapse;background:#fff;font-size:13px;min-width:100%}
+#fake td,#fake th{border:1px solid #e2e3e3;padding:3px 8px;height:22px;min-width:92px;white-space:nowrap}
+#fake th{background:#f8f9fa;font-weight:400;color:#5f6368;text-align:center}
+#fake td.rn{background:#f8f9fa;color:#5f6368;text-align:center;min-width:34px}
+#fake .fx{padding:4px 14px;border-bottom:1px solid #e0e0e0;background:#fff;color:#5f6368;display:flex;gap:16px}
+@media(max-width:560px){#fake .page{padding:36px 22px}.grid[data-view="large"]{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}.logo span{display:none}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
 
 <header>
   <div class="bar">
-    <div class="logo"><i>S</i><span>Study Hub</span></div>
+    <div class="logo"><i id="logoLetter">S</i><span id="logoName">Study Hub</span></div>
     <div class="search">
       <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
       <input id="q" type="search" placeholder="Search…  ( press / )" autocomplete="off">
     </div>
     <button class="btn" id="randBtn" title="Open a random item">🎲 Random</button>
     <button class="btn" id="cloakBtn" title="Open inside an about:blank tab">🫥 Cloak</button>
+    <button class="btn" id="statsBtn" title="Time and usage">📊 Stats</button>
+    <button class="btn" id="lockBtn" title="Lock now" style="display:none">🔒 Lock</button>
     <button class="btn" id="setBtn" title="Settings">⚙️ Settings</button>
   </div>
   <div class="tabs">
     <button class="tab on" data-tab="all">All</button>
+    <button class="tab" data-tab="new" id="newTab" style="display:none">✨ New</button>
     <button class="tab" data-tab="fav">★ Favorites</button>
     <button class="tab" data-tab="recent">Recent</button>
     <span class="spacer"></span>
+    <div class="seg" id="viewSeg" title="Layout">
+      <button data-v="large" title="Large cards">▦</button>
+      <button data-v="compact" title="Compact">▥</button>
+      <button data-v="list" title="List">☰</button>
+    </div>
     <select id="sort" title="Sort">
       <option value="az">A → Z</option>
       <option value="za">Z → A</option>
       <option value="most">Most opened</option>
+      <option value="time">Most time</option>
     </select>
   </div>
 </header>
 
 <main>
   <div class="count" id="count"></div>
-  <div class="grid" id="grid"></div>
+  <div class="grid" id="grid" data-view="large"></div>
   <div class="empty" id="empty" style="display:none"></div>
 </main>
 
@@ -130,56 +249,132 @@ main{max-width:1300px;margin:auto;padding:18px}
   </div>
   <div id="frameWrap">
     <div id="status"><div><div class="spin"></div><div id="statusTxt">Loading…</div></div></div>
-    <iframe id="frame" allow="fullscreen; autoplay; gamepad; clipboard-read; clipboard-write" allowfullscreen></iframe>
   </div>
 </div>
 
 <!-- settings -->
-<div id="settings">
+<div class="ov" id="settings">
   <div class="modal">
     <h3>Settings</h3>
 
+    <h4>Look</h4>
     <div class="row">
-      <label>Tab disguise (title + icon)</label>
-      <select id="disguise">
-        <option value="default">Study Hub</option>
-        <option value="docs">Google Docs</option>
-        <option value="classroom">Google Classroom</option>
-        <option value="drive">Google Drive</option>
-        <option value="canvas">Canvas (Dashboard)</option>
-        <option value="custom">Custom…</option>
+      <label>Site name &amp; logo letter</label>
+      <div class="inline">
+        <input type="text" id="siteName" placeholder="Study Hub" style="flex:1;min-width:160px">
+        <input type="text" id="siteLetter" maxlength="2" placeholder="S" style="width:64px;text-align:center">
+      </div>
+    </div>
+    <div class="row">
+      <label>Appearance</label>
+      <select id="theme">
+        <option value="dark">Dark</option>
+        <option value="light">Light</option>
+        <option value="doc">Plain document (looks like a boring list)</option>
       </select>
+    </div>
+    <div class="row">
+      <label>Accent color</label>
+      <div class="swatches" id="swatches"></div>
+    </div>
+
+    <h4>Tab disguise</h4>
+    <div class="row">
+      <label>Tab title &amp; icon</label>
+      <select id="disguise"></select>
       <div class="inline" id="customRow" style="display:none">
         <input type="text" id="customTitle" placeholder="Custom tab title" style="flex:1">
       </div>
     </div>
 
+    <h4>Quick hide</h4>
     <div class="row">
-      <label>Quick-hide key</label>
+      <label>Hide key and what it does</label>
       <div class="inline">
-        <input type="text" id="panicKey" maxlength="1" placeholder="`" style="width:70px">
-        <input type="text" id="panicUrl" placeholder="https://classroom.google.com" style="flex:1">
+        <input type="text" id="panicKey" maxlength="1" placeholder="`" style="width:64px;text-align:center">
+        <select id="panicMode" style="flex:1;min-width:190px">
+          <option value="doc">Show a fake document</option>
+          <option value="sheet">Show a fake spreadsheet</option>
+          <option value="redirect">Go to a web address</option>
+        </select>
       </div>
-      <span class="hint">Press this key (outside of a text box) to instantly jump to the page above. Double-tap Esc also works.</span>
+      <input type="text" id="panicUrl" placeholder="https://classroom.google.com">
+      <span class="hint">Press the key (outside a text box) or tap Esc twice. With a fake page showing, press it again to come back. Sound is muted while hidden.</span>
+      <label class="check"><input type="checkbox" id="panicLock"> Also lock the page (needs a password)</label>
     </div>
 
+    <h4>Password</h4>
     <div class="row">
-      <label>Theme</label>
-      <select id="theme">
-        <option value="dark">Dark</option>
-        <option value="light">Light</option>
+      <label id="pwState">No password set</label>
+      <div class="inline">
+        <input type="password" id="newPw" placeholder="New password" style="flex:1;min-width:150px">
+        <button class="btn" id="setPw">Set</button>
+        <button class="btn" id="rmPw" style="display:none;color:var(--danger)">Remove</button>
+      </div>
+      <select id="autolock">
+        <option value="0">Don’t auto-lock</option>
+        <option value="1">Auto-lock after 1 minute idle</option>
+        <option value="5">Auto-lock after 5 minutes idle</option>
+        <option value="15">Auto-lock after 15 minutes idle</option>
+        <option value="30">Auto-lock after 30 minutes idle</option>
       </select>
+      <span class="hint">A casual lock to keep the page from opening for someone else, not strong security. It is stored in this browser; clearing site data removes it.</span>
     </div>
 
+    <h4>Offline copy</h4>
     <div class="row">
-      <label>Data</label>
+      <label class="check"><input type="checkbox" id="offOn"> Keep a copy of opened items and thumbnails</label>
+      <div class="inline">
+        <button class="btn" id="offSave">Save everything now</button>
+        <button class="btn" id="offClear">Clear saved copies</button>
+      </div>
+      <span class="hint" id="offInfo"></span>
+      <span class="hint">Saved copies cover the item pages and thumbnails. Most items also pull files from the internet while they run, so they may not fully work offline.</span>
+    </div>
+
+    <h4>Data</h4>
+    <div class="row">
+      <div class="inline">
+        <button class="btn" id="exportBtn">Export backup</button>
+        <button class="btn" id="importBtn">Import backup</button>
+        <input type="file" id="importFile" accept="application/json,.json" style="display:none">
+      </div>
+      <span class="hint">Backs up favorites, history, stats, layout and saved progress. The password is not included.</span>
       <div class="inline">
         <button class="btn" id="refreshBtn">Refresh list</button>
-        <button class="btn" id="clearBtn" style="color:var(--danger)">Reset favorites &amp; history</button>
+        <button class="btn" id="markSeenBtn">Mark all as seen</button>
+        <button class="btn" id="clearBtn" style="color:var(--danger)">Reset favorites, history &amp; stats</button>
       </div>
+      <span class="hint" id="listInfo"></span>
     </div>
 
     <div class="foot"><button class="btn primary" id="closeSet">Done</button></div>
+  </div>
+</div>
+
+<!-- stats -->
+<div class="ov" id="stats">
+  <div class="modal">
+    <h3>Your usage</h3>
+    <div id="statsBody"></div>
+    <div class="foot">
+      <button class="btn" id="statsReset" style="color:var(--danger)">Reset stats</button>
+      <button class="btn primary" id="closeStats">Close</button>
+    </div>
+  </div>
+</div>
+
+<div id="fake"></div>
+
+<!-- lock -->
+<div id="lock">
+  <div class="lockbox" id="lockbox">
+    <div class="big" id="lockLetter">S</div>
+    <h2 id="lockName">Study Hub</h2>
+    <p>Enter your password to continue.</p>
+    <input type="password" id="lpw" placeholder="Password" autocomplete="off">
+    <button class="btn primary" id="lbtn">Unlock</button>
+    <div id="lerr"></div>
   </div>
 </div>
 
@@ -196,88 +391,203 @@ main{max-width:1300px;margin:auto;padding:18px}
   const $ = s => document.querySelector(s);
   const store = {
     get(k, d) { try { const v = localStorage.getItem("sh_" + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
-    set(k, v) { try { localStorage.setItem("sh_" + k, JSON.stringify(v)); } catch {} }
+    set(k, v) { try { localStorage.setItem("sh_" + k, JSON.stringify(v)); } catch {} },
+    del(k) { try { localStorage.removeItem("sh_" + k); } catch {} }
   };
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  const toast = (m) => { const t = $("#toast"); t.textContent = m; t.classList.add("show"); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove("show"), 2000); };
+  const toast = (m, ms) => { const t = $("#toast"); t.textContent = m; t.classList.add("show"); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove("show"), ms || 2200); };
+  const fmtTime = s => { s = Math.round(s || 0); if (s <= 0) return "0m"; if (s < 60) return "<1m"; const m = Math.floor(s / 60); return m < 60 ? m + "m" : Math.floor(m / 60) + "h " + (m % 60) + "m"; };
 
   // ---- state ----
-  let items = [];
+  let items = [], loaded = false, failed = false;
   let tab = "all";
   let favs = new Set(store.get("favs", []));
-  let recent = store.get("recent", []);       // titles, newest first
+  let recent = store.get("recent", []);        // titles, newest first
   let counts = store.get("counts", {});
-  let current = null;
-  let blobUrl = null;
+  let times = store.get("times", {});          // seconds per title
+  let seen = store.get("seen", null);          // titles already acknowledged (null = first visit)
+  let newSet = new Set();
+  let current = null, blobUrl = null, pushed = false, lastHtml = "";
+  let lastAct = Date.now();
+  const bump = () => { lastAct = Date.now(); };
 
-  // ---- disguise ----
-  const svg = body => "data:image/svg+xml," + encodeURIComponent(
-    `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'>${body}</svg>`);
-  // Canvas-style ring of dots, generated rather than hand-placed
+  // ---- branding / theme / accent / view ----
+  const siteName = () => (store.get("name", "") || "").trim() || "Study Hub";
+  const siteLetter = () => ((store.get("letter", "") || "").trim() || siteName().charAt(0)).toUpperCase().slice(0, 2);
+  const PRESETS = ["#4f7cff", "#2fb67c", "#8a5cff", "#f0883e", "#e5528f", "#1fb5c4", "#e2514a"];
+  function applyTheme() { document.documentElement.dataset.theme = store.get("theme", "dark"); }
+  function applyAccent() {
+    const a = store.get("accent", null), r = document.documentElement;
+    if (a) r.style.setProperty("--accent", a); else r.style.removeProperty("--accent");
+  }
+  const accentNow = () => (getComputedStyle(document.documentElement).getPropertyValue("--accent") || "#4f7cff").trim();
+  function applyBrand() {
+    $("#logoName").textContent = siteName(); $("#logoLetter").textContent = siteLetter();
+    $("#lockName").textContent = siteName(); $("#lockLetter").textContent = siteLetter();
+  }
+  const view = () => store.get("theme", "dark") === "doc" ? "list" : store.get("view", "large");
+  function applyView() {
+    $("#grid").dataset.view = view();
+    document.querySelectorAll("#viewSeg button").forEach(b => b.classList.toggle("on", b.dataset.v === view()));
+  }
+
+  // ---- tab disguise ----
+  const svg = body => "data:image/svg+xml," + encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'>${body}</svg>`);
+  const PAGE = "M8 3h11l7 7v17a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z";
   const canvasDots = (() => {
     let s = "<circle cx='16' cy='16' r='14' fill='#e13f2d'/><circle cx='16' cy='16' r='2.6' fill='#fff'/>";
     for (let i = 0; i < 8; i++) {
-      const a = i * Math.PI / 4;
+      const a = i * Math.PI / 4, b = a + Math.PI / 4;
       s += `<circle cx='${(16 + 9 * Math.cos(a)).toFixed(2)}' cy='${(16 + 9 * Math.sin(a)).toFixed(2)}' r='2.1' fill='#fff'/>`;
-      const b = a + Math.PI / 4;
       s += `<circle cx='${(16 + 5 * Math.cos(b)).toFixed(2)}' cy='${(16 + 5 * Math.sin(b)).toFixed(2)}' r='1.3' fill='#fff'/>`;
     }
     return s;
   })();
-  const DISGUISES = {
-    default: { t: "Study Hub", i: svg("<rect width='32' height='32' rx='7' fill='#4f7cff'/><text x='16' y='23' font-size='20' text-anchor='middle' fill='white' font-family='Arial' font-weight='700'>S</text>") },
-    docs: { t: "Untitled document - Google Docs", real: "https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico",
-      i: svg("<path d='M8 3h11l7 7v17a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z' fill='#4285f4'/><path d='M19 3l7 7h-5a2 2 0 0 1-2-2z' fill='#a1c2fa'/><rect x='10' y='15' width='12' height='1.8' fill='#fff'/><rect x='10' y='19' width='12' height='1.8' fill='#fff'/><rect x='10' y='23' width='8' height='1.8' fill='#fff'/>") },
-    classroom: { t: "Classroom", real: "https://ssl.gstatic.com/classroom/favicon.png",
-      i: svg("<rect x='2' y='5' width='28' height='22' rx='3' fill='#0f9d58'/><rect x='5' y='8' width='22' height='16' rx='1.5' fill='#57bb8a'/><circle cx='16' cy='14' r='3.2' fill='#f4b400'/><path d='M9.5 23c0-3.6 2.9-5.4 6.5-5.4s6.5 1.8 6.5 5.4z' fill='#f4b400'/>") },
-    drive: { t: "My Drive - Google Drive", real: "https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_32dp.png",
-      i: svg("<path d='M11 3h10l9.5 16.5h-10z' fill='#ffba00'/><path d='M30.5 19.5 25.5 28h-16l5-8.5z' fill='#2684fc'/><path d='M1.5 19.5 11 3l5 8.5-9.5 16z' fill='#00ac47'/>") },
-    canvas: { t: "Dashboard", i: svg(canvasDots) }
+  const DIS = {
+    docs:      { label: "Google Docs",      t: "Untitled document - Google Docs",      real: "https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico",
+      i: svg(`<path d='${PAGE}' fill='#4285f4'/><path d='M19 3l7 7h-5a2 2 0 0 1-2-2z' fill='#a1c2fa'/><rect x='10' y='15' width='12' height='1.8' fill='#fff'/><rect x='10' y='19' width='12' height='1.8' fill='#fff'/><rect x='10' y='23' width='8' height='1.8' fill='#fff'/>`) },
+    slides:    { label: "Google Slides",    t: "Untitled presentation - Google Slides", real: "https://ssl.gstatic.com/docs/presentations/images/favicon5.ico",
+      i: svg(`<path d='${PAGE}' fill='#f4b400'/><path d='M19 3l7 7h-5a2 2 0 0 1-2-2z' fill='#fce8b2'/><rect x='10' y='15' width='12' height='8.5' rx='1' fill='none' stroke='#fff' stroke-width='1.7'/>`) },
+    sheets:    { label: "Google Sheets",    t: "Untitled spreadsheet - Google Sheets",  real: "https://ssl.gstatic.com/docs/spreadsheets/favicon3.ico",
+      i: svg(`<path d='${PAGE}' fill='#0f9d58'/><path d='M19 3l7 7h-5a2 2 0 0 1-2-2z' fill='#87ceac'/><rect x='10' y='15' width='12' height='9' fill='none' stroke='#fff' stroke-width='1.5'/><path d='M10 19.5h12M16 15v9' stroke='#fff' stroke-width='1.5'/>`) },
+    classroom: { label: "Google Classroom", t: "Classroom",                             real: "https://ssl.gstatic.com/classroom/favicon.png",
+      i: svg(`<rect x='2' y='5' width='28' height='22' rx='3' fill='#0f9d58'/><rect x='5' y='8' width='22' height='16' rx='1.5' fill='#57bb8a'/><circle cx='16' cy='14' r='3.2' fill='#f4b400'/><path d='M9.5 23c0-3.6 2.9-5.4 6.5-5.4s6.5 1.8 6.5 5.4z' fill='#f4b400'/>`) },
+    drive:     { label: "Google Drive",     t: "My Drive - Google Drive",               real: "https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_32dp.png",
+      i: svg(`<path d='M11 3h10l9.5 16.5h-10z' fill='#ffba00'/><path d='M30.5 19.5 25.5 28h-16l5-8.5z' fill='#2684fc'/><path d='M1.5 19.5 11 3l5 8.5-9.5 16z' fill='#00ac47'/>`) },
+    gmail:     { label: "Gmail",            t: "Inbox - Gmail",                         real: "https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico",
+      i: svg(`<rect x='2' y='6' width='28' height='20' rx='3' fill='#fff' stroke='#dadce0'/><path d='M3 9v15' stroke='#4285f4' stroke-width='3'/><path d='M29 9v15' stroke='#34a853' stroke-width='3'/><path d='M3.5 8.5 16 18 28.5 8.5' fill='none' stroke='#ea4335' stroke-width='2.6' stroke-linejoin='round'/>`) },
+    canvas:    { label: "Canvas (Dashboard)", t: "Dashboard",                           i: svg(canvasDots) },
+    khan:      { label: "Khan Academy",     t: "Khan Academy",                          real: "https://www.khanacademy.org/favicon.ico",
+      i: svg(`<rect width='32' height='32' rx='7' fill='#14bf96'/><path d='M16 6l8 4.6v9.2L16 24.4l-8-4.6v-9.2z' fill='#fff'/><circle cx='16' cy='15.5' r='3.2' fill='#14bf96'/>`) },
+    desmos:    { label: "Desmos",           t: "Desmos | Graphing Calculator",          real: "https://www.desmos.com/favicon.ico",
+      i: svg(`<rect width='32' height='32' rx='7' fill='#2e7d32'/><path d='M5 20c4-12 7-12 11 0s7 12 11 0' fill='none' stroke='#fff' stroke-width='2.4' stroke-linecap='round'/>`) }
   };
-  // Try the site's real icon; if it can't be loaded (blocked/offline) the drawn one stays.
+  const defaultIcon = () => svg(`<rect width='32' height='32' rx='7' fill='${esc(accentNow())}'/><text x='16' y='${siteLetter().length > 1 ? 21 : 23}' font-size='${siteLetter().length > 1 ? 15 : 20}' text-anchor='middle' fill='white' font-family='Arial' font-weight='700'>${esc(siteLetter())}</text>`);
   const realIcon = {};
   function probeIcon(k) {
     return new Promise(res => {
-      const u = (DISGUISES[k] || {}).real;
+      const u = (DIS[k] || {}).real;
       if (!u) return res(null);
       if (k in realIcon) return res(realIcon[k]);
       const im = new Image();
       const done = v => { realIcon[k] = v; res(v); };
-      im.onload = () => done(u);
-      im.onerror = () => done(null);
-      im.referrerPolicy = "no-referrer";
-      im.src = u;
+      im.onload = () => done(u); im.onerror = () => done(null);
+      im.referrerPolicy = "no-referrer"; im.src = u;
       setTimeout(() => { if (!(k in realIcon)) res(null); }, 4000);
     });
   }
-  function applyDisguise() {
+  function disguiseNow() {
     const k = store.get("disguise", "default");
-    let d = DISGUISES[k] || DISGUISES.default;
-    if (k === "custom") d = { t: store.get("customTitle", "Study Hub") || "Study Hub", i: DISGUISES.default.i };
+    if (k === "custom") return { k, t: (store.get("customTitle", "") || "").trim() || siteName(), i: defaultIcon() };
+    if (DIS[k]) return { k, t: DIS[k].t, i: DIS[k].i };
+    return { k: "default", t: siteName(), i: defaultIcon() };
+  }
+  function applyDisguise() {
+    const d = disguiseNow();
     document.title = d.t;
     $("#fav").href = d.i;
-    probeIcon(k).then(u => { if (u && store.get("disguise", "default") === k) $("#fav").href = u; });
+    probeIcon(d.k).then(u => { if (u && disguiseNow().k === d.k) $("#fav").href = u; });
   }
 
-  // ---- data ----
-  async function loadList(force) {
-    if (!force) {
+  // ---- offline cache (Cache Storage; item pages + thumbnails) ----
+  const CACHE = "sh-offline-v1";
+  const cacheOn = () => store.get("offline", true) && "caches" in window;
+  async function cPut(url, resp) { try { if (!cacheOn()) return; const c = await caches.open(CACHE); await c.put(url, resp); } catch {} }
+  async function cGet(url) { try { if (!("caches" in window)) return null; const c = await caches.open(CACHE); return await c.match(url); } catch { return null; } }
+  async function fetchPage(url) {
+    try {
+      const ctl = new AbortController();
+      const timer = setTimeout(() => ctl.abort(), 12000);        // only guards the connection, not the download
+      const r = await fetch(url, { signal: ctl.signal });
+      clearTimeout(timer);
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      cPut(url, r.clone());
+      return { text: await r.text(), offline: false };
+    } catch (e) {
+      const c = await cGet(url);
+      if (c) return { text: await c.text(), offline: true };
+      throw e;
+    }
+  }
+  let prefetched = false;
+  async function prefetchThumbs() {
+    if (prefetched || !cacheOn()) return;
+    prefetched = true;
+    const run = async () => {
+      for (const x of items) {
+        if (!x.image) continue;
+        try { if (!(await cGet(x.image))) { const r = await fetch(x.image); if (r.ok) await cPut(x.image, r); } } catch {}
+      }
+    };
+    (window.requestIdleCallback || (f => setTimeout(f, 2500)))(run);
+  }
+  async function cacheInfo() {
+    const el = $("#offInfo");
+    try {
+      const c = await caches.open(CACHE), keys = await c.keys();
+      let est = "";
+      if (navigator.storage && navigator.storage.estimate) { const e = await navigator.storage.estimate(); est = " · " + ((e.usage || 0) / 1048576).toFixed(1) + " MB used by this site"; }
+      el.textContent = keys.length + " files saved" + est;
+    } catch { el.textContent = "Saved copies aren’t available in this context (they need the page to be served over https)."; }
+  }
+  let saving = false, stopSave = false;
+  async function saveAll() {
+    if (saving) { stopSave = true; return; }
+    if (!cacheOn()) { toast("Turn on the offline copy option first"); return; }
+    saving = true; stopSave = false; $("#offSave").textContent = "Stop";
+    let done = 0;
+    for (const x of items) {
+      if (stopSave) break;
+      try { await fetchPage(x.url); } catch {}
+      if (x.image) { try { if (!(await cGet(x.image))) { const r = await fetch(x.image); if (r.ok) await cPut(x.image, r); } } catch {} }
+      done++; $("#offInfo").textContent = "Saving " + done + " of " + items.length + "…";
+    }
+    saving = false; $("#offSave").textContent = "Save everything now";
+    toast(stopSave ? "Stopped" : "Saved for offline"); cacheInfo();
+  }
+
+  // ---- data + update check ----
+  function computeNew() {
+    const titles = items.map(x => x.title);
+    if (seen === null) { seen = titles; store.set("seen", seen); }
+    const s = new Set(seen);
+    newSet = new Set(titles.filter(t => !s.has(t)));
+    updateNewUi();
+  }
+  function updateNewUi() {
+    const n = newSet.size, b = $("#newTab");
+    b.style.display = n ? "" : "none";
+    b.textContent = "✨ New (" + n + ")";
+    if (!n && tab === "new") setTab("all");
+  }
+  function markSeen(t) { if (newSet.delete(t)) { seen.push(t); store.set("seen", seen); updateNewUi(); } }
+  function markAllSeen() { seen = items.map(x => x.title); store.set("seen", seen); newSet.clear(); updateNewUi(); render(); toast("Marked as seen"); }
+
+  let announced = false;
+  async function loadList(opts) {
+    opts = opts || {};
+    if (!loaded && !opts.force) {
       const cached = store.get("list", null);
-      if (cached && cached.length) { items = cached; render(); }
+      if (cached && cached.length) { items = cached; loaded = true; computeNew(); render(true); }
     }
     try {
       const r = await fetch(LIST_URL, { cache: "no-cache" });
       if (!r.ok) throw new Error(r.status);
       const data = await r.json();
-      items = (Array.isArray(data) ? data : []).filter(x => x && x.title && x.url);
-      store.set("list", items);
-      render();
-      if (force) toast("List refreshed");
+      const next = (Array.isArray(data) ? data : []).filter(x => x && x.title && x.url);
+      const before = new Set(items.map(x => x.title));
+      const added = loaded ? next.filter(x => !before.has(x.title)) : [];
+      items = next; loaded = true; failed = false;
+      store.set("list", items); store.set("listAt", Date.now());
+      computeNew(); render(!opts.silent);
+      if (opts.force) toast("List refreshed");
+      else if (opts.silent && added.length) toast(added.length + " new item" + (added.length > 1 ? "s" : "") + " added");
+      else if (!announced && newSet.size) toast(newSet.size + " new since your last visit");
+      announced = true;
+      prefetchThumbs();
     } catch (e) {
-      if (!items.length) {
-        $("#empty").style.display = "block";
-        $("#empty").innerHTML = "Couldn’t load the list.<br><br><button class='btn' onclick='location.reload()'>Try again</button>";
-      } else if (force) toast("Offline – showing saved list");
+      if (!items.length) { failed = true; render(); }
+      else if (opts.force) toast("Offline – showing saved list");
     }
   }
 
@@ -286,6 +596,7 @@ main{max-width:1300px;margin:auto;padding:18px}
     const q = $("#q").value.trim().toLowerCase();
     let list = items.slice();
     if (tab === "fav") list = list.filter(x => favs.has(x.title));
+    if (tab === "new") list = list.filter(x => newSet.has(x.title));
     if (tab === "recent") list = recent.map(t => items.find(x => x.title === t)).filter(Boolean);
     if (q) list = list.filter(x => x.title.toLowerCase().includes(q));
     if (tab !== "recent") {
@@ -293,64 +604,93 @@ main{max-width:1300px;margin:auto;padding:18px}
       if (s === "az") list.sort((a, b) => a.title.localeCompare(b.title));
       if (s === "za") list.sort((a, b) => b.title.localeCompare(a.title));
       if (s === "most") list.sort((a, b) => (counts[b.title] || 0) - (counts[a.title] || 0) || a.title.localeCompare(b.title));
+      if (s === "time") list.sort((a, b) => (times[b.title] || 0) - (times[a.title] || 0) || a.title.localeCompare(b.title));
     }
     return list;
   }
-  function render() {
-    const list = visible();
-    const g = $("#grid");
+  function render(anim) {
+    const g = $("#grid"), em = $("#empty");
+    applyView();
+    g.classList.toggle("anim", !!anim);
     g.innerHTML = "";
-    list.forEach(x => {
+    if (!loaded && !failed) {
+      for (let i = 0; i < 12; i++) {
+        const c = document.createElement("div"); c.className = "card sk";
+        c.innerHTML = `<div class="thumb"></div><div class="bar1"></div>`;
+        g.appendChild(c);
+      }
+      $("#count").textContent = "Loading…"; em.style.display = "none";
+      return;
+    }
+    if (failed && !items.length) {
+      $("#count").textContent = "";
+      em.style.display = "block";
+      em.innerHTML = "Couldn’t load the list.<br><br><button class='btn' id='retryList'>Try again</button>";
+      $("#retryList").onclick = () => { failed = false; render(); loadList(); };
+      return;
+    }
+    const list = visible();
+    list.forEach((x, i) => {
       const c = document.createElement("div");
       c.className = "card"; c.tabIndex = 0; c.setAttribute("role", "button");
-      const on = favs.has(x.title);
+      c.style.setProperty("--i", Math.min(i, 20));
+      const on = favs.has(x.title), n = counts[x.title] || 0, t = times[x.title] || 0;
       c.innerHTML =
         `<div class="thumb"><div class="ph">${esc(x.title.trim().charAt(0).toUpperCase())}</div>` +
-        (x.image ? `<img loading="lazy" referrerpolicy="no-referrer" alt="" src="${esc(x.image)}">` : "") +
-        `<button class="star ${on ? "on" : ""}" aria-label="Favorite"><svg viewBox="0 0 24 24"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg></button></div>` +
-        `<div class="meta"><b title="${esc(x.title)}">${esc(x.title)}</b></div>`;
+        (x.image ? `<img loading="lazy" referrerpolicy="no-referrer" alt="" src="${esc(x.image)}">` : "") + `</div>` +
+        `<div class="mt"><b title="${esc(x.title)}">${esc(x.title)}</b>` + (n ? `<small>${fmtTime(t)} · ${n} play${n > 1 ? "s" : ""}</small>` : "") + `</div>` +
+        `<button class="star ${on ? "on" : ""}" aria-label="Favorite"><svg viewBox="0 0 24 24"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg></button>` +
+        (newSet.has(x.title) ? `<span class="ribbon">NEW</span>` : "");
       const img = c.querySelector("img");
-      if (img) img.onerror = () => img.remove();
+      if (img) img.onerror = async () => {
+        const r = await cGet(x.image);        // offline fallback
+        if (r) { try { const b = await r.blob(); img.onerror = () => img.remove(); img.src = URL.createObjectURL(b); return; } catch {} }
+        img.remove();
+      };
       c.querySelector(".star").onclick = e => { e.stopPropagation(); toggleFav(x.title); };
       c.onclick = () => openItem(x);
       c.onkeydown = e => { if (e.key === "Enter") openItem(x); };
       g.appendChild(c);
     });
     $("#count").textContent = list.length + (list.length === 1 ? " item" : " items");
-    const em = $("#empty");
     if (!list.length && items.length) {
       em.style.display = "block";
-      em.textContent = tab === "fav" ? "No favorites yet — tap the star on anything." : tab === "recent" ? "Nothing opened recently." : "No matches.";
-    } else if (items.length) em.style.display = "none";
+      em.textContent = tab === "fav" ? "No favorites yet — tap the star on anything." : tab === "recent" ? "Nothing opened recently." : tab === "new" ? "Nothing new." : "No matches.";
+    } else em.style.display = "none";
+  }
+  function setTab(t) {
+    tab = t;
+    document.querySelectorAll(".tab").forEach(b => b.classList.toggle("on", b.dataset.tab === t));
+    render(true);
   }
   function toggleFav(t) {
     favs.has(t) ? favs.delete(t) : favs.add(t);
     store.set("favs", [...favs]);
     render(); syncViewerFav();
   }
-  function syncViewerFav() {
-    if (current) $("#vFav").textContent = favs.has(current.title) ? "★" : "☆";
-  }
+  function syncViewerFav() { if (current) $("#vFav").textContent = favs.has(current.title) ? "★" : "☆"; }
 
   // ---- viewer ----
-  function baseOf(url) { return url.slice(0, url.lastIndexOf("/") + 1); }
+  const baseOf = url => url.slice(0, url.lastIndexOf("/") + 1);
+  const inCloak = () => { try { return window.top !== window.self; } catch { return true; } };
+  const audioMsg = kind => { const f = $("#frame"); if (f && f.contentWindow) try { f.contentWindow.postMessage({ shAudio: kind }, "*"); } catch {} };
 
   async function openItem(x) {
     current = x;
     counts[x.title] = (counts[x.title] || 0) + 1; store.set("counts", counts);
     recent = [x.title, ...recent.filter(t => t !== x.title)].slice(0, 20); store.set("recent", recent);
+    markSeen(x.title);
     $("#vTitle").textContent = x.title;
     syncViewerFav();
-    $("#viewer").classList.add("open");
+    const v = $("#viewer"); v.classList.remove("closing"); v.classList.add("open");
     document.body.style.overflow = "hidden";
     if (!pushed) { history.pushState({ v: 1 }, ""); pushed = true; }
     await loadFrame();
   }
 
-  // Runs inside each item's frame, before its own scripts. When the page is opened
-  // from a file or a sandboxed context, the frame has no origin and the browser
-  // denies localStorage / sessionStorage / cookies. This swaps in working
-  // stand-ins, and saves localStorage back to this page so progress is kept.
+  // Injected into every item's frame before its own scripts. Gives the frame working
+  // storage when the browser denies it (file / sandboxed pages), and saves
+  // localStorage back to this page so progress is kept.
   function shimFn(seed, title) {
     function works(n) { try { var s = window[n]; s.setItem("__t", "1"); s.removeItem("__t"); return true; } catch (e) { return false; } }
     function has(o, k) { return Object.prototype.hasOwnProperty.call(o, k); }
@@ -401,23 +741,45 @@ main{max-width:1300px;margin:auto;padding:18px}
       } catch (e2) {}
     }
   }
-  function storageShim(title) {
-    const safe = v => JSON.stringify(v).replace(/</g, "\\u003c");
-    return "<script>(" + shimFn.toString() + ")(" + safe(store.get("ls_" + title, {})) + "," + safe(title) + ");<\/script>";
+  // Also injected: lets the hub mute/resume sound, and forwards the hide key,
+  // Esc and "I'm still here" pings out of the frame (keys pressed inside a frame
+  // never reach the page around it otherwise).
+  function hubShimFn(pk) {
+    try {
+      var ctxs = [];
+      ["AudioContext", "webkitAudioContext"].forEach(function (n) {
+        var O = window[n];
+        if (!O || typeof Reflect === "undefined") return;
+        function W() { var c = Reflect.construct(O, arguments, O); ctxs.push(c); return c; }
+        W.prototype = O.prototype;
+        try { Object.defineProperty(window, n, { configurable: true, writable: true, value: W }); } catch (e) {}
+      });
+      window.addEventListener("message", function (e) {
+        var m = e.data; if (!m || !m.shAudio) return;
+        var on = m.shAudio === "resume";
+        ctxs.forEach(function (c) { try { if (on) c.resume(); else c.suspend(); } catch (x) {} });
+        [].forEach.call(document.querySelectorAll("audio,video"), function (el) {
+          try { if (!on) { el.dataset.shm = el.muted ? "1" : "0"; el.muted = true; } else { el.muted = el.dataset.shm === "1"; } } catch (x) {}
+        });
+      });
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" || e.key === pk) {
+          var t = e.target && e.target.tagName;
+          if (e.key === pk && /INPUT|TEXTAREA/.test(t || "")) return;
+          try { parent.postMessage({ shKey: e.key }, "*"); } catch (x) {}
+        }
+      }, true);
+      var lt = 0;
+      var act = function () { var n = Date.now(); if (n - lt > 5000) { lt = n; try { parent.postMessage({ shAct: 1 }, "*"); } catch (x) {} } };
+      ["mousemove", "keydown", "pointerdown", "touchstart"].forEach(function (t) { document.addEventListener(t, act, true); });
+    } catch (e) {}
   }
-  window.addEventListener("message", e => {
-    const m = e.data;
-    if (m && m.shLS === 1 && current && m.title === current.title && $("#frame") && e.source === $("#frame").contentWindow) {
-      store.set("ls_" + m.title, m.data);
-    }
-  });
+  const safeJson = v => JSON.stringify(v).replace(/</g, "\\u003c");
+  const storageShim = title => "<script>(" + shimFn.toString() + ")(" + safeJson(store.get("ls_" + title, {})) + "," + safeJson(title) + ");<\/script>";
+  const hubShim = () => "<script>(" + hubShimFn.toString() + ")(" + safeJson(store.get("panicKey", "`") || "`") + ");<\/script>";
+  const YT_FIX = "<script>(function(){var v;try{Object.defineProperty(window,'ytgame',{configurable:true,get:function(){return v},set:function(x){try{if(x&&typeof x==='object')x.IN_PLAYABLES_ENV=false}catch(e){}v=x}})}catch(e){}})();<\/script>";
 
-  let pushed = false;      // did opening an item push a history entry?
-  let lastHtml = "";       // prepared page, reused for "open in new tab"
-  const inCloak = () => { try { return window.top !== window.self; } catch { return true; } };
-
-  // A fresh frame per load: reloading or leaving never stacks extra history
-  // entries, which is what made "Back" need two clicks.
+  // A fresh frame per load: reloading or leaving never stacks extra history entries.
   function newFrame() {
     const old = $("#frame"); if (old) old.remove();
     const f = document.createElement("iframe");
@@ -434,20 +796,13 @@ main{max-width:1300px;margin:auto;padding:18px}
     st.classList.remove("hide");
     tx.textContent = "Loading…";
     try {
-      const r = await fetch(x.url);
-      if (!r.ok) throw new Error("HTTP " + r.status);
-      let html = await r.text();
+      const got = await fetchPage(x.url);
       if (current !== x) return;   // left before it finished loading
-      // Make relative asset paths resolve against the original folder — but only
-      // when the page doesn't already declare its own <base> (the first <base>
-      // in a document wins, so adding ours would break pages that set one).
+      let html = got.text;
+      if (got.offline) toast("Opened from your saved copy");
+      // Add a base address only when the page doesn't declare its own (the first <base> wins).
       const base = /<base[\s>]/i.test(html) ? "" : `<base href="${baseOf(x.url)}">`;
-      // Some items bundle a video-site SDK that assumes it is hosted by that site
-      // whenever it sits inside a frame. Tell it it is standalone instead.
-      const ytFix = /ytgame/i.test(html)
-        ? "<script>(function(){var v;try{Object.defineProperty(window,'ytgame',{configurable:true,get:function(){return v},set:function(x){try{if(x&&typeof x==='object')x.IN_PLAYABLES_ENV=false}catch(e){}v=x}})}catch(e){}})();<\/script>"
-        : "";
-      const inject = storageShim(x.title) + ytFix + base;
+      const inject = storageShim(x.title) + hubShim() + (/ytgame/i.test(html) ? YT_FIX : "") + base;
       if (/<head[^>]*>/i.test(html)) html = html.replace(/<head[^>]*>/i, m => m + inject);
       else if (/<html[^>]*>/i.test(html)) html = html.replace(/<html[^>]*>/i, m => m + inject);
       else html = inject + html;
@@ -456,7 +811,7 @@ main{max-width:1300px;margin:auto;padding:18px}
       blobUrl = URL.createObjectURL(new Blob([html], { type: "text/html" }));
       const fr = newFrame();
       fr.onload = () => { st.classList.add("hide"); try { fr.focus(); } catch {} };
-      // The #origin hint gives that SDK a valid target origin so it no longer throws.
+      // The #origin hint gives bundled video-site SDKs a valid target origin so they don't throw.
       fr.src = blobUrl + "#origin=" + encodeURIComponent("https://www.youtube.com");
     } catch (e) {
       tx.innerHTML = "Couldn’t load this one.<br><br><button class='btn' id='retry'>Retry</button>";
@@ -465,7 +820,9 @@ main{max-width:1300px;margin:auto;padding:18px}
   }
 
   function closeViewer(fromPop) {
-    $("#viewer").classList.remove("open");
+    const v = $("#viewer");
+    v.classList.remove("open"); v.classList.add("closing");
+    setTimeout(() => v.classList.remove("closing"), 180);
     document.body.style.overflow = "";
     const f = $("#frame"); if (f) f.remove();      // removing it also drops its history entries
     if (blobUrl) { URL.revokeObjectURL(blobUrl); blobUrl = null; }
@@ -474,7 +831,6 @@ main{max-width:1300px;margin:auto;padding:18px}
     render();
     if (pushed) {
       pushed = false;
-      // tidy up the entry we pushed (skip if the browser's own Back already did)
       if (!fromPop && history.state && history.state.v) history.back();
     }
   }
@@ -488,6 +844,7 @@ main{max-width:1300px;margin:auto;padding:18px}
     (w.requestFullscreen || w.webkitRequestFullscreen).call(w);
     try { $("#frame").focus(); } catch {}
   };
+
   // about:blank cloak: a blank tab that simply contains the given address
   function openCloaked(src) {
     const w = window.open("about:blank", "_blank");
@@ -501,84 +858,314 @@ main{max-width:1300px;margin:auto;padding:18px}
     f.style.cssText = "position:fixed;inset:0;width:100%;height:100%;border:0";
     w.document.body.style.margin = "0";
     w.document.body.appendChild(f);
+    // the hide key inside a cloaked game tab: jump that tab to the hide address
+    w.addEventListener("message", e => {
+      const m = e.data;
+      if (m && m.shKey && m.shKey === (store.get("panicKey", "`") || "`")) {
+        let u = store.get("panicUrl", "https://classroom.google.com") || "https://classroom.google.com";
+        if (!/^https?:\/\//i.test(u)) u = "https://" + u;
+        try { w.location.replace(u); } catch {}
+      }
+    });
     return true;
   }
-
   $("#vNew").onclick = () => {
     if (!lastHtml) return;
     const u = URL.createObjectURL(new Blob([lastHtml], { type: "text/html" })) + "#origin=" + encodeURIComponent("https://www.youtube.com");
-    // already cloaked? then keep it cloaked
-    if (inCloak()) openCloaked(u); else window.open(u, "_blank");
+    if (inCloak()) openCloaked(u); else window.open(u, "_blank");   // already cloaked? keep it cloaked
+  };
+  $("#cloakBtn").onclick = () => { if (openCloaked(location.href)) toast("Opened — you can close this tab"); };
+
+  // ---- fake page (quick hide) ----
+  const fakeOn = () => $("#fake").classList.contains("on");
+  function fakeHtml(mode) {
+    if (mode === "sheet") {
+      const cols = "ABCDEFGH".split("");
+      const data = [["Assignment", "Score", "Out of", "Percent"], ["Quiz 1", 18, 20], ["Quiz 2", 16, 20], ["Homework 3", 45, 50], ["Lab report", 88, 100], ["Midterm", 71, 80], ["Project", 93, 100], ["Quiz 3", 19, 20], ["Homework 4", 47, 50]];
+      let h = `<div class="top"><div class="ico" style="background:#0f9d58"></div><div><div class="ttl">Untitled spreadsheet</div><div class="menus"><span>File</span><span>Edit</span><span>View</span><span>Insert</span><span>Format</span><span>Data</span><span>Tools</span></div></div></div><div class="fx"><span>fx</span><span>B2</span></div><div style="overflow:auto"><table><tr><th></th>${cols.map(c => `<th>${c}</th>`).join("")}</tr>`;
+      for (let r = 0; r < 30; r++) {
+        const row = data[r] || [];
+        if (r > 0 && row.length === 3) row[3] = Math.round(row[1] / row[2] * 100) + "%";
+        h += `<tr><td class="rn">${r + 1}</td>${cols.map((c, i) => `<td${i && row[i] != null && r ? ' style="text-align:right"' : ""}>${row[i] != null ? esc(row[i]) : ""}</td>`).join("")}</tr>`;
+      }
+      return h + "</table></div>";
+    }
+    return `<div class="top"><div class="ico" style="background:#4285f4"></div><div><div class="ttl">Untitled document</div><div class="menus"><span>File</span><span>Edit</span><span>View</span><span>Insert</span><span>Format</span><span>Tools</span><span>Help</span></div></div></div>
+<div class="tool"><span>100%</span><span>Normal text</span><span>Arial</span><span>11</span><b>B</b><i>I</i><u>U</u></div>
+<div class="page"><h1>Unit 3: Ecosystems and Energy Flow</h1>
+<p>An ecosystem is a community of living things interacting with each other and with the non-living parts of their environment, such as water, soil, and sunlight. Energy enters most ecosystems as sunlight, which producers like plants and algae convert into chemical energy through photosynthesis.</p>
+<p>Consumers get their energy by eating other organisms. Primary consumers eat producers, secondary consumers eat primary consumers, and so on. At each step only about ten percent of the energy is passed on to the next level; the rest is lost as heat or used for the organism’s own life processes.</p>
+<p>Key terms to review:</p>
+<ul><li>producer, consumer, decomposer</li><li>food chain and food web</li><li>trophic level</li><li>biomass</li></ul>
+<p>Study questions: Why are food chains rarely longer than four or five links? What would happen to a pond ecosystem if the decomposers disappeared?</p></div>`;
+  }
+  function showFake(mode) {
+    if (document.fullscreenElement) document.exitFullscreen();
+    const f = $("#fake"); f.innerHTML = fakeHtml(mode); f.scrollTop = 0; f.classList.add("on");
+    audioMsg("suspend");
+  }
+  function hideFake() { $("#fake").classList.remove("on"); audioMsg("resume"); bump(); }
+  function panicNow() {
+    if (isLocked()) return;
+    if (fakeOn()) { hideFake(); return; }
+    if (store.get("panicLock", false) && hasPw()) lockNow();
+    const mode = store.get("panicMode", "doc");
+    if (mode === "redirect") {
+      let u = store.get("panicUrl", "https://classroom.google.com") || "https://classroom.google.com";
+      if (!/^https?:\/\//i.test(u)) u = "https://" + u;
+      location.replace(u);
+    } else showFake(mode);
+  }
+
+  // ---- password gate ----
+  const hasPw = () => !!store.get("pw", null);
+  const isLocked = () => document.documentElement.classList.contains("locked");
+  async function hashPw(pw, salt) {
+    const s = salt + ":" + pw;
+    if (window.crypto && crypto.subtle) {
+      const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
+      return "s2:" + [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, "0")).join("");
+    }
+    let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
+    return "d:" + h;
+  }
+  async function setPassword(pw) {
+    const salt = Math.random().toString(36).slice(2) + Date.now().toString(36);
+    store.set("pw", { s: salt, h: await hashPw(pw, salt) });
+  }
+  function lockNow() {
+    if (!hasPw()) return;
+    if (document.fullscreenElement) document.exitFullscreen();
+    document.documentElement.classList.add("locked");
+    audioMsg("suspend");
+    $("#lpw").value = ""; $("#lerr").textContent = "";
+    setTimeout(() => { try { $("#lpw").focus(); } catch {} }, 60);
+  }
+  async function tryUnlock() {
+    const rec = store.get("pw", null);
+    if (!rec) { document.documentElement.classList.remove("locked"); return; }
+    if (rec.h.startsWith("s2:") && !(window.crypto && crypto.subtle)) { $("#lerr").textContent = "Open this page over https to unlock."; return; }
+    const ok = (await hashPw($("#lpw").value, rec.s)) === rec.h;
+    if (ok) {
+      document.documentElement.classList.remove("locked");
+      audioMsg("resume"); bump(); $("#lpw").value = ""; $("#lerr").textContent = "";
+    } else {
+      $("#lerr").textContent = "Incorrect password";
+      const b = $("#lockbox"); b.classList.remove("shake"); void b.offsetWidth; b.classList.add("shake");
+      $("#lpw").select();
+    }
+  }
+  $("#lbtn").onclick = tryUnlock;
+  $("#lpw").addEventListener("keydown", e => { if (e.key === "Enter") tryUnlock(); });
+  $("#lockBtn").onclick = lockNow;
+  const syncPwUi = () => {
+    const on = hasPw();
+    $("#lockBtn").style.display = on ? "" : "none";
+    $("#rmPw").style.display = on ? "" : "none";
+    $("#pwState").textContent = on ? "Password is on" : "No password set";
+    $("#setPw").textContent = on ? "Change" : "Set";
+  };
+  setInterval(() => {
+    const mins = +store.get("autolock", 0);
+    if (mins && hasPw() && !isLocked() && Date.now() - lastAct > mins * 60000) lockNow();
+  }, 10000);
+
+  // ---- play-time tracking + stats ----
+  setInterval(() => {
+    if (current && !document.hidden && !isLocked() && !fakeOn()) {
+      times[current.title] = (times[current.title] || 0) + 5;
+      store.set("times", times);
+    }
+  }, 5000);
+  function openStats() {
+    const total = Object.values(times).reduce((a, b) => a + b, 0);
+    const opens = Object.values(counts).reduce((a, b) => a + b, 0);
+    const tried = Object.keys(counts).filter(k => counts[k] > 0).length;
+    const rows = Object.entries(times).filter(([, s]) => s > 0).sort((a, b) => b[1] - a[1]).slice(0, 10);
+    const max = rows.length ? rows[0][1] : 1;
+    $("#statsBody").innerHTML =
+      `<div class="tiles"><div class="tile"><b>${fmtTime(total)}</b><span>Total time</span></div>` +
+      `<div class="tile"><b>${opens}</b><span>Times opened</span></div>` +
+      `<div class="tile"><b>${tried}</b><span>Items tried</span></div>` +
+      `<div class="tile"><b>${favs.size}</b><span>Favorites</span></div></div>` +
+      (rows.length ? `<h4 style="margin-top:6px">Most time</h4>` + rows.map(([t, s]) =>
+        `<div class="barrow"><span class="t" title="${esc(t)}">${esc(t)}</span><span class="track"><span class="fill" style="display:block;width:${Math.max(4, s / max * 100)}%"></span></span><span class="v">${fmtTime(s)}</span></div>`).join("")
+        : `<p class="hint" style="margin-top:10px">Nothing tracked yet. Time is counted while an item is open and this tab is visible.</p>`);
+    $("#stats").classList.add("open");
+  }
+  $("#statsBtn").onclick = openStats;
+  $("#closeStats").onclick = () => $("#stats").classList.remove("open");
+  $("#stats").addEventListener("click", e => { if (e.target === $("#stats")) $("#stats").classList.remove("open"); });
+  $("#statsReset").onclick = () => {
+    if (!confirm("Reset play time and open counts?")) return;
+    times = {}; counts = {}; store.set("times", times); store.set("counts", counts); openStats(); render();
   };
 
-  // ---- controls ----
-  $("#q").addEventListener("input", render);
+  // ---- settings ----
+  const S = $("#settings");
+  function openSettings() {
+    $("#listInfo").textContent = (store.get("listAt", 0) ? "List updated " + new Date(store.get("listAt", 0)).toLocaleString() + " · " : "") + items.length + " items";
+    syncPwUi(); cacheInfo(); S.classList.add("open");
+  }
+  $("#setBtn").onclick = openSettings;
+  $("#closeSet").onclick = () => S.classList.remove("open");
+  S.addEventListener("click", e => { if (e.target === S) S.classList.remove("open"); });
+
+  // look
+  $("#siteName").value = store.get("name", "");
+  $("#siteLetter").value = store.get("letter", "");
+  const rebrand = () => { applyBrand(); applyDisguise(); };
+  $("#siteName").oninput = () => { store.set("name", $("#siteName").value); rebrand(); };
+  $("#siteLetter").oninput = () => { store.set("letter", $("#siteLetter").value); rebrand(); };
+  $("#theme").value = store.get("theme", "dark");
+  $("#theme").onchange = () => { store.set("theme", $("#theme").value); applyTheme(); applyDisguise(); render(); };
+  const sw = $("#swatches");
+  function buildSwatches() {
+    const cur = store.get("accent", null);
+    sw.innerHTML = "";
+    const auto = document.createElement("button"); auto.className = "sw auto" + (cur ? "" : " on"); auto.title = "Theme default";
+    auto.onclick = () => { store.del("accent"); applyAccent(); buildSwatches(); applyDisguise(); };
+    sw.appendChild(auto);
+    PRESETS.forEach(c => {
+      const b = document.createElement("button"); b.className = "sw" + (cur === c ? " on" : ""); b.style.background = c; b.title = c;
+      b.onclick = () => { store.set("accent", c); applyAccent(); buildSwatches(); applyDisguise(); };
+      sw.appendChild(b);
+    });
+    const pick = document.createElement("input"); pick.type = "color"; pick.value = cur || accentNow().slice(0, 7); pick.title = "Custom color";
+    pick.oninput = () => { store.set("accent", pick.value); applyAccent(); sw.querySelectorAll(".sw").forEach(s => s.classList.remove("on")); applyDisguise(); };
+    sw.appendChild(pick);
+  }
+
+  // disguise
+  const dsel = $("#disguise");
+  dsel.innerHTML = `<option value="default">Site name (no disguise)</option>` +
+    Object.entries(DIS).map(([k, v]) => `<option value="${k}">${esc(v.label)}</option>`).join("") + `<option value="custom">Custom title…</option>`;
+  dsel.value = store.get("disguise", "default");
+  $("#customTitle").value = store.get("customTitle", "");
+  const showCustom = () => $("#customRow").style.display = dsel.value === "custom" ? "flex" : "none";
+  showCustom();
+  dsel.onchange = () => { store.set("disguise", dsel.value); showCustom(); applyDisguise(); };
+  $("#customTitle").oninput = () => { store.set("customTitle", $("#customTitle").value); applyDisguise(); };
+
+  // quick hide
+  $("#panicKey").value = store.get("panicKey", "`");
+  $("#panicUrl").value = store.get("panicUrl", "https://classroom.google.com");
+  $("#panicMode").value = store.get("panicMode", "doc");
+  $("#panicLock").checked = !!store.get("panicLock", false);
+  $("#panicKey").oninput = () => store.set("panicKey", $("#panicKey").value || "`");
+  $("#panicUrl").oninput = () => store.set("panicUrl", $("#panicUrl").value);
+  $("#panicMode").onchange = () => store.set("panicMode", $("#panicMode").value);
+  $("#panicLock").onchange = () => {
+    if ($("#panicLock").checked && !hasPw()) { $("#panicLock").checked = false; toast("Set a password first"); return; }
+    store.set("panicLock", $("#panicLock").checked);
+  };
+
+  // password
+  $("#autolock").value = String(store.get("autolock", 0));
+  $("#autolock").onchange = () => {
+    if (+$("#autolock").value && !hasPw()) { $("#autolock").value = "0"; toast("Set a password first"); return; }
+    store.set("autolock", +$("#autolock").value);
+  };
+  $("#setPw").onclick = async () => {
+    const pw = $("#newPw").value;
+    if (!pw) { toast("Type a password first"); return; }
+    await setPassword(pw); $("#newPw").value = ""; syncPwUi(); toast("Password saved");
+  };
+  $("#rmPw").onclick = () => {
+    if (!confirm("Remove the password?")) return;
+    store.del("pw"); store.set("autolock", 0); store.set("panicLock", false);
+    $("#autolock").value = "0"; $("#panicLock").checked = false; syncPwUi(); toast("Password removed");
+  };
+
+  // offline
+  $("#offOn").checked = !!store.get("offline", true);
+  $("#offOn").onchange = () => { store.set("offline", $("#offOn").checked); if ($("#offOn").checked) { prefetched = false; prefetchThumbs(); } };
+  $("#offSave").onclick = saveAll;
+  $("#offClear").onclick = async () => { try { await caches.delete(CACHE); } catch {} prefetched = false; cacheInfo(); toast("Saved copies cleared"); };
+
+  // data
+  $("#refreshBtn").onclick = () => loadList({ force: true });
+  $("#markSeenBtn").onclick = markAllSeen;
+  $("#clearBtn").onclick = () => {
+    if (!confirm("Clear favorites, recent, play counts and time?")) return;
+    favs = new Set(); recent = []; counts = {}; times = {};
+    store.set("favs", []); store.set("recent", []); store.set("counts", {}); store.set("times", {});
+    render(); toast("Cleared");
+  };
+  const SKIP = ["sh_list", "sh_listAt", "sh_pw"];
+  $("#exportBtn").onclick = () => {
+    const data = {};
+    try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith("sh_") && !SKIP.includes(k)) data[k] = localStorage.getItem(k); } } catch {}
+    const blob = new Blob([JSON.stringify({ app: "study-hub", v: 1, at: new Date().toISOString(), data }, null, 2)], { type: "application/json" });
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "study-hub-backup.json";
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+    toast("Backup downloaded");
+  };
+  $("#importBtn").onclick = () => $("#importFile").click();
+  $("#importFile").onchange = async e => {
+    const file = e.target.files[0]; e.target.value = "";
+    if (!file) return;
+    try {
+      const j = JSON.parse(await file.text());
+      if (!j || j.app !== "study-hub" || typeof j.data !== "object") throw new Error("bad");
+      let n = 0;
+      for (const [k, v] of Object.entries(j.data)) {
+        if (k.startsWith("sh_") && typeof v === "string" && !SKIP.includes(k)) { try { localStorage.setItem(k, v); n++; } catch {} }
+      }
+      toast("Imported " + n + " settings — reloading…"); setTimeout(() => location.reload(), 900);
+    } catch { toast("That file isn’t a valid backup"); }
+  };
+
+  // ---- main controls ----
+  $("#q").addEventListener("input", () => render());
   $("#sort").value = store.get("sort", "az");
-  $("#sort").onchange = () => { store.set("sort", $("#sort").value); render(); };
-  document.querySelectorAll(".tab").forEach(b => b.onclick = () => {
-    tab = b.dataset.tab;
-    document.querySelectorAll(".tab").forEach(t => t.classList.toggle("on", t === b));
-    render();
+  $("#sort").onchange = () => { store.set("sort", $("#sort").value); render(true); };
+  document.querySelectorAll(".tab").forEach(b => b.onclick = () => setTab(b.dataset.tab));
+  document.querySelectorAll("#viewSeg button").forEach(b => b.onclick = () => {
+    if (store.get("theme", "dark") === "doc") { toast("Plain document mode always uses the list"); return; }
+    store.set("view", b.dataset.v); render(true);
   });
   $("#randBtn").onclick = () => {
     const pool = visible().length ? visible() : items;
     if (pool.length) openItem(pool[Math.floor(Math.random() * pool.length)]);
   };
 
-  // about:blank cloak
-  $("#cloakBtn").onclick = () => {
-    if (openCloaked(location.href)) toast("Opened — you can close this tab");
-  };
-
-  // settings
-  const S = $("#settings");
-  $("#setBtn").onclick = () => S.classList.add("open");
-  $("#closeSet").onclick = () => S.classList.remove("open");
-  S.addEventListener("click", e => { if (e.target === S) S.classList.remove("open"); });
-  $("#disguise").value = store.get("disguise", "default");
-  $("#customTitle").value = store.get("customTitle", "");
-  const showCustom = () => $("#customRow").style.display = $("#disguise").value === "custom" ? "flex" : "none";
-  showCustom();
-  $("#disguise").onchange = () => { store.set("disguise", $("#disguise").value); showCustom(); applyDisguise(); };
-  $("#customTitle").oninput = () => { store.set("customTitle", $("#customTitle").value); applyDisguise(); };
-  $("#panicKey").value = store.get("panicKey", "`");
-  $("#panicUrl").value = store.get("panicUrl", "https://classroom.google.com");
-  $("#panicKey").oninput = () => store.set("panicKey", $("#panicKey").value || "`");
-  $("#panicUrl").oninput = () => store.set("panicUrl", $("#panicUrl").value);
-  $("#theme").value = store.get("theme", "dark");
-  const applyTheme = () => document.documentElement.dataset.theme = store.get("theme", "dark");
-  $("#theme").onchange = () => { store.set("theme", $("#theme").value); applyTheme(); };
-  $("#refreshBtn").onclick = () => loadList(true);
-  $("#clearBtn").onclick = () => {
-    if (!confirm("Clear favorites, recent and counts?")) return;
-    favs = new Set(); recent = []; counts = {};
-    store.set("favs", []); store.set("recent", []); store.set("counts", {});
-    render(); toast("Cleared");
-  };
-
-  // keyboard: search focus, quick-hide
-  let lastEsc = 0;
-  function panic() {
-    let u = store.get("panicUrl", "https://classroom.google.com") || "https://classroom.google.com";
-    if (!/^https?:\/\//i.test(u)) u = "https://" + u;
-    location.replace(u);
-  }
-  document.addEventListener("keydown", e => {
-    const typing = /INPUT|TEXTAREA|SELECT/.test((e.target.tagName || ""));
-    if (e.key === "/" && !typing) { e.preventDefault(); $("#q").focus(); return; }
-    if (!typing && e.key === store.get("panicKey", "`")) { panic(); return; }
-    if (e.key === "Escape") {
-      const now = Date.now();
-      if (now - lastEsc < 450) { panic(); return; }
-      lastEsc = now;
-      if (S.classList.contains("open")) S.classList.remove("open");
-    }
+  // ---- messages from item frames ----
+  window.addEventListener("message", e => {
+    const m = e.data, fr = $("#frame");
+    if (!m || typeof m !== "object" || !fr || e.source !== fr.contentWindow) return;
+    if (m.shLS === 1 && current && m.title === current.title) store.set("ls_" + m.title, m.data);
+    else if (m.shKey) onKey(m.shKey);
+    else if (m.shAct) bump();
   });
 
-  // init
-  applyTheme();
-  applyDisguise();
-  loadList(false);
+  // ---- keyboard: search focus, quick hide, Esc ----
+  let lastEsc = 0;
+  function onKey(key) {
+    if (key === "Escape") {
+      const now = Date.now();
+      if (now - lastEsc < 450) { lastEsc = 0; panicNow(); return; }
+      lastEsc = now;
+      if (S.classList.contains("open")) S.classList.remove("open");
+      if ($("#stats").classList.contains("open")) $("#stats").classList.remove("open");
+    } else if (key === (store.get("panicKey", "`") || "`")) panicNow();
+  }
+  document.addEventListener("keydown", e => {
+    bump();
+    if (isLocked()) return;
+    const typing = /INPUT|TEXTAREA|SELECT/.test((e.target.tagName || ""));
+    if (e.key === "/" && !typing && !fakeOn()) { e.preventDefault(); $("#q").focus(); return; }
+    if (e.key === "Escape" || (!typing && e.key === (store.get("panicKey", "`") || "`"))) onKey(e.key);
+  });
+  ["mousemove", "pointerdown", "touchstart"].forEach(t => document.addEventListener(t, bump, { passive: true }));
+
+  // ---- init ----
+  applyTheme(); applyAccent(); applyBrand(); applyView();
+  buildSwatches(); applyDisguise(); syncPwUi();
+  render(true);                         // skeleton cards until the list arrives
+  loadList();
+  setInterval(() => loadList({ silent: true }), 10 * 60 * 1000);   // update check
+  if (isLocked()) setTimeout(() => { try { $("#lpw").focus(); } catch {} }, 80);
 })();
 </script>
 </body>
