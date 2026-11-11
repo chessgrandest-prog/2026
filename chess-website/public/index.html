@@ -6,7 +6,9 @@
 <title>Chess</title>
 <style>
 :root{
-  --bg:#1f252d; --panel:#29303a; --line:#3b4552; --ink:#ece9e2; --muted:#9ba6b2;
+  --bg:#1f252d; --bgd:#0f1318; --panel:#29303a; --line:#3b4552; --ink:#ece9e2; --muted:#9ba6b2;
+  --field:#1b2027; --surface:#252c35; --btn:#343d49; --btn-hover:#3d4755; --card:#303844; --card-on:#3a4452; --hover:#3b4552; --toast:#323b47;
+  --warn:#f0867f; --good:#7bc88f; --acc-text:#e3a83b; --c-inacc:#f1c45b; --c-mistake:#f0924a; --c-blunder:#f0605d;
   --light:#e1e4da; --dark:#6d8298; --amber:#e3a83b; --check:#d9534f;
   --bdmax:min(94vw, calc(100vh - 175px), 720px); --bscale:1;
   --hl-last:rgba(227,168,59,.5); --hl-sel:rgba(227,168,59,.8);
@@ -36,7 +38,7 @@ body{
 .sq.dk{background-color:var(--dark)}
 .sq.last{background-image:linear-gradient(var(--hl-last),var(--hl-last))}
 .sq.sel{background-image:linear-gradient(var(--hl-sel),var(--hl-sel))}
-.sq.chk{background-image:radial-gradient(circle,var(--hl-check) 0,var(--hl-check2) 35%,var(--hl-check0) 75%)}
+.sq.incheck{background-image:radial-gradient(circle,var(--hl-check) 0,var(--hl-check2) 35%,var(--hl-check0) 75%)}
 .sq.pre{background-image:linear-gradient(var(--hl-pre),var(--hl-pre))}
 .sq.pdot::after{content:"";position:absolute;width:28%;height:28%;border-radius:50%;background:var(--hl-pre-solid);opacity:.7;pointer-events:none}
 .hs-ring .sq.dot::after{width:72%;height:72%;background:none;border:max(3px,.7vmin) solid #1d2128;opacity:.3}
@@ -67,8 +69,8 @@ body{
 }
 h1{margin:0;font-size:1.9rem;font-weight:600;letter-spacing:.01em}
 #status{font-size:1.2rem;line-height:1.3;min-height:2.6em}
-#status.over{color:var(--amber)}
-#status.warn{color:#f0867f}
+#status.over{color:var(--acc-text)}
+#status.warn{color:var(--warn)}
 #moves{
   flex:1;min-height:90px;overflow:auto;border-top:1px solid var(--line);border-bottom:1px solid var(--line);
   padding:8px 0;font-variant-numeric:tabular-nums;
@@ -84,23 +86,23 @@ h1{margin:0;font-size:1.9rem;font-weight:600;letter-spacing:.01em}
 body.mode-cpu .cpuOnly,body.mode-cpu .sideOnly,body.mode-net .sideOnly,body.mode-puz .puzOpt,body.mode-cpu .tcOpt,body.mode-two .tcOpt,body.mode-net .tcOpt{display:flex!important}
 body.mode-net .netOnly,body.mode-puz .puzOnly,body.mode-net .resignBtn,body.mode-puz .puzBtn{display:block!important}
 body.mode-net #undoBtn,body.mode-puz #undoBtn,body.mode-puz #moves{display:none!important}
-.net{border:1px solid var(--line);border-radius:6px;padding:10px;background:#252c35}
+.net{border:1px solid var(--line);border-radius:6px;padding:10px;background:var(--surface)}
 .netRow{display:flex;gap:6px;align-items:center}
 .netRow span{color:var(--muted);font:.78rem system-ui,sans-serif}
 #codeIn{
   width:5.6em;font:600 1rem ui-monospace,Menlo,Consolas,monospace;letter-spacing:.12em;text-transform:uppercase;
-  color:var(--ink);background:#1b2027;border:1px solid var(--line);border-radius:5px;padding:7px 8px;
+  color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:5px;padding:7px 8px;
 }
 #codeIn:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
 #netInfo{margin-top:8px;font:.82rem/1.4 system-ui,sans-serif;color:var(--muted)}
 #netInfo:empty{display:none}
-#netInfo .code{display:inline-block;color:var(--amber);font:700 1.35rem ui-monospace,Menlo,Consolas,monospace;letter-spacing:.14em;margin-right:6px}
+#netInfo .code{display:inline-block;color:var(--acc-text);font:700 1.35rem ui-monospace,Menlo,Consolas,monospace;letter-spacing:.14em;margin-right:6px}
 #netInfo button{padding:4px 8px;font-size:.8rem}
 select,button{
-  font:500 .92rem system-ui,sans-serif;color:var(--ink);background:#343d49;border:1px solid var(--line);
+  font:500 .92rem system-ui,sans-serif;color:var(--ink);background:var(--btn);border:1px solid var(--line);
   border-radius:5px;padding:7px 9px;cursor:pointer;
 }
-select:hover,button:hover{background:#3d4755}
+select:hover,button:hover{background:var(--btn-hover)}
 select:focus-visible,button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
 .btns{display:flex;gap:8px;flex-wrap:wrap}
 .btns button{flex:1 1 auto}
@@ -111,7 +113,7 @@ button.primary:hover{background:#efb84f}
 /* promotion */
 .modal{position:fixed;inset:0;background:#0009;display:flex;align-items:center;justify-content:center;z-index:100}
 .modal .box{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:18px 20px;text-align:center}
-.modal p{margin:0 0 12px;font-size:1.1rem}
+#promo p{margin:0 0 12px;font-size:1.1rem}
 #promoBtns{display:flex;gap:10px}
 .pbtn{width:76px;height:76px;padding:0;display:grid;place-items:center;background:var(--dark)}
 .pbtn:hover{background:#7f95ab}
@@ -121,7 +123,7 @@ button.primary:hover{background:#efb84f}
 #puzWrap{flex:1;min-height:110px;overflow:auto;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:10px 4px;font-size:1.02rem;line-height:1.45}
 #puzWrap p{margin:0 0 7px}
 #puzWrap .k{color:var(--muted)}
-#puzWrap a{color:var(--amber)}
+#puzWrap a{color:var(--acc-text)}
 #puzWrap .src{font:.76rem/1.35 system-ui,sans-serif;color:var(--muted);margin-top:10px}
 .stage{display:flex;flex-direction:column;gap:8px;width:var(--bd)}
 .strip{
@@ -132,8 +134,8 @@ button.primary:hover{background:#efb84f}
 .strip .tm{font:600 1.35rem ui-monospace,Menlo,Consolas,monospace;font-variant-numeric:tabular-nums;color:var(--muted)}
 .strip.turn{border-color:var(--amber)}
 .strip.turn .tm{color:var(--ink)}
-.strip.run .tm{color:var(--amber)}
-.strip.low .tm{color:#f0867f}
+.strip.run .tm{color:var(--acc-text)}
+.strip.low .tm{color:var(--warn)}
 body.mode-puz{--extra:0px}
 body.mode-puz .strip{display:none}
 .pc.svg{width:100%;height:100%;font-size:0;background-repeat:no-repeat;background-position:center;background-size:94%;filter:drop-shadow(0 1px 1px #0003)}
@@ -144,7 +146,7 @@ body.mode-puz .strip{display:none}
 .tcCustom{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:8px}
 body.mode-puz .tcCustom{display:none!important}
 input[type=number]{
-  font:500 .92rem system-ui,sans-serif;color:var(--ink);background:#1b2027;border:1px solid var(--line);
+  font:500 .92rem system-ui,sans-serif;color:var(--ink);background:var(--field);border:1px solid var(--line);
   border-radius:5px;padding:7px 9px;width:100%;
 }
 input[type=number]:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
@@ -155,8 +157,8 @@ button:disabled,select:disabled,input:disabled{opacity:.45;cursor:not-allowed}
 .set h3{margin:16px 0 8px;font:600 .88rem system-ui,sans-serif;color:var(--muted)}
 .swatches,.pieceGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .pieceGrid{grid-template-columns:repeat(3,1fr)}
-.sw,.pt{display:flex;flex-direction:column;align-items:center;gap:5px;padding:7px 4px;font-size:.8rem;background:#303844}
-.sw.on,.pt.on{outline:2px solid var(--amber);outline-offset:1px;background:#3a4452}
+.sw,.pt{display:flex;flex-direction:column;align-items:center;gap:5px;padding:7px 4px;font-size:.8rem;background:var(--card)}
+.sw.on,.pt.on{outline:2px solid var(--amber);outline-offset:1px;background:var(--card-on)}
 .swc{width:44px;height:44px;border-radius:4px;border:1px solid #0006}
 .ptPrev{display:grid;grid-template-columns:1fr 1fr;border-radius:4px;overflow:hidden;border:1px solid #0006}
 .ptSq{display:grid;place-items:center;width:44px;height:44px}
@@ -186,7 +188,7 @@ body.mode-ana .anaBlock{display:block!important}
 body.mode-cpu .playBtn,body.mode-two .playBtn,body.mode-net .playBtn{display:block!important}
 body.mode-ana .btns,body.mode-ana .tip{display:none!important}
 #anaTop{display:none}
-.engBox{border:1px solid var(--line);border-radius:6px;background:#252c35;padding:8px 10px}
+.engBox{border:1px solid var(--line);border-radius:6px;background:var(--surface);padding:8px 10px}
 .engHead{display:flex;align-items:center;gap:8px;margin-bottom:6px;font:.8rem system-ui,sans-serif;color:var(--muted)}
 .engHead select{padding:3px 6px;font-size:.8rem}
 #engMeta{flex:1}
@@ -196,23 +198,23 @@ body.mode-ana .btns,body.mode-ana .tip{display:none!important}
 .eline .ev{flex:none;width:3.7em;text-align:right;font:700 .85rem ui-monospace,Menlo,Consolas,monospace}
 .eline .pv{overflow:hidden;white-space:nowrap;text-overflow:ellipsis;min-width:0}
 .pvm{cursor:pointer;margin-right:6px}
-.pvm:hover{color:var(--amber)}
+.pvm:hover{color:var(--acc-text)}
 .engMsg{font:.82rem/1.4 system-ui,sans-serif;color:var(--muted);margin:2px 0}
 #moves.ana{line-height:1.75;align-content:flex-start}
 .mv{cursor:pointer;margin-right:6px;padding:0 3px;border-radius:3px;white-space:nowrap}
-.mv:hover{background:#3b4552}
-.mv.inaccuracy{color:#f1c45b}.mv.mistake{color:#f0924a}.mv.blunder{color:#f0605d}
+.mv:hover{background:var(--hover)}
+.mv.inaccuracy{color:var(--c-inacc)}.mv.mistake{color:var(--c-mistake)}.mv.blunder{color:var(--c-blunder)}
 .mv.now{background:var(--amber);color:#1f252d}
 .var{color:var(--muted);font-size:.95rem;margin-right:4px}
-.lnk{color:var(--amber);cursor:pointer}
-.revBox{border:1px solid var(--line);border-radius:6px;background:#252c35;padding:8px 10px;margin-top:10px}
-.pbar{height:8px;background:#1b2027;border-radius:4px;overflow:hidden;margin:6px 0 8px}
+.lnk{color:var(--acc-text);cursor:pointer}
+.revBox{border:1px solid var(--line);border-radius:6px;background:var(--surface);padding:8px 10px;margin-top:10px}
+.pbar{height:8px;background:var(--field);border-radius:4px;overflow:hidden;margin:6px 0 8px}
 .pbar i{display:block;height:100%;background:var(--amber)}
 .sum{width:100%;border-collapse:collapse;font:.82rem system-ui,sans-serif}
 .sum td,.sum th{padding:2px 4px;text-align:center;font-weight:500}
 .sum th:first-child{text-align:left;color:var(--muted)}
 .sum tr:first-child th{color:var(--muted);font-weight:600}
-.graph{display:block;width:100%;height:76px;border-radius:4px;background:#1b2027;cursor:pointer;margin:8px 0}
+.graph{display:block;width:100%;height:76px;border-radius:4px;background:#232830;cursor:pointer;margin:8px 0}
 .revBox .acts{margin-top:2px}
 .nav{display:flex;gap:6px}
 .nav button{flex:1;padding:6px 0}
@@ -224,7 +226,7 @@ body.mode-ana .btns,body.mode-ana .tip{display:none!important}
 .dlgBtns button{flex:1}
 #pgnText{
   display:block;width:100%;height:210px;resize:vertical;font:.82rem/1.45 ui-monospace,Menlo,Consolas,monospace;
-  color:var(--ink);background:#1b2027;border:1px solid var(--line);border-radius:5px;padding:8px;
+  color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:5px;padding:8px;
 }
 #pgnText:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
 #impMsg{min-height:1.2em}
@@ -241,12 +243,13 @@ html.focus .stage{margin-left:0!important}
 html.focus:not(.fclk) .strip{display:none!important}
 html.focus body{--bdmax:min(96vw, calc(100vh - 36px), 1000px);padding:12px}
 html.focus.fclk body{--bdmax:min(96vw, calc(100vh - 128px), 1000px)}
-html.focus.dim{--bg:#0f1318}
+html.focus.dim,html.focus.dim body{background:var(--bgd)}
+html.focus #toasts{bottom:auto;top:16px}
 #focusExit{display:none;position:fixed;top:10px;right:10px;z-index:90;opacity:.35;padding:6px 12px;font-size:.8rem}
 html.focus #focusExit{display:block}
 #focusExit:hover,#focusExit:focus-visible{opacity:1}
 @media (max-width:720px){
-  html:not(.nodrawer) body{--bdmax:min(96vw, calc(100vh - 215px), 720px);padding-bottom:70px}
+  html:not(.nodrawer) body{--bdmax:min(96vw, calc(100vh - 215px), 720px);padding-bottom:70px;align-items:flex-start;padding-top:10px}
   html:not(.nodrawer) body.mode-ana{--bdmax:min(90vw, calc(100vh - 215px), 720px)}
   html:not(.nodrawer) .panel{
     position:fixed;left:0;right:0;bottom:0;width:auto;height:min(80vh,580px);border-radius:14px 14px 0 0;
@@ -267,13 +270,13 @@ html.focus #focusExit{display:block}
 
 /* ---------- toasts, confirm, game over, history, new settings controls ---------- */
 #toasts{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:300;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;width:min(92vw,420px)}
-.toast{pointer-events:auto;background:#323b47;border:1px solid var(--line);border-radius:8px;padding:10px 14px;box-shadow:0 8px 24px #0007;font:.9rem/1.35 system-ui,sans-serif;display:flex;gap:12px;align-items:center;justify-content:space-between;width:100%;animation:toastIn .2s ease-out}
+.toast{pointer-events:auto;background:var(--toast);border:1px solid var(--line);border-radius:8px;padding:10px 14px;box-shadow:0 8px 24px #0007;font:.9rem/1.35 system-ui,sans-serif;display:flex;gap:12px;align-items:center;justify-content:space-between;width:100%;animation:toastIn .2s ease-out}
 .toast .tb{display:flex;gap:6px;flex:none}
 .toast button{padding:4px 10px;font-size:.82rem}
 @keyframes toastIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .box.cfm,.box.goBox{width:min(92vw,400px);text-align:left;font-family:system-ui,sans-serif}
 .cfm h2,.goBox h2{margin:0 0 8px;font:600 1.35rem Georgia,serif}
-.cfm p,.goBox p{margin:0 0 6px;line-height:1.45;color:var(--muted)}
+.cfm p,.goBox p{margin:0 0 6px;font-size:.95rem;line-height:1.45;color:var(--muted)}
 button.danger{background:#c0504d;border-color:#c0504d;color:#fff}
 button.danger:hover{background:#d0605d}
 .goBox{text-align:center}
@@ -281,15 +284,15 @@ button.danger:hover{background:#d0605d}
 .goBtns{flex-wrap:wrap}
 .linkBtn{margin-top:12px;background:none;border:0;color:var(--muted);text-decoration:underline;padding:4px;font-size:.85rem}
 .statsGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:8px 0 4px}
-.stat{background:#303844;border-radius:6px;padding:8px 4px;text-align:center}
+.stat{background:var(--card);border-radius:6px;padding:8px 4px;text-align:center}
 .stat b{display:block;font:700 1.25rem Georgia,serif}
 .stat span{font:.72rem system-ui,sans-serif;color:var(--muted)}
-.histList{max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:6px;background:#252c35}
+.histList{max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
 .histRow{display:grid;grid-template-columns:1fr auto;gap:2px 8px;padding:8px 10px;border-bottom:1px solid var(--line);font:.85rem/1.35 system-ui,sans-serif}
 .histRow:last-child{border-bottom:0}
 .histRow .meta{color:var(--muted);font-size:.78rem}
 .histRow .res{font-weight:700;align-self:center}
-.histRow .res.w{color:#7bc88f}.histRow .res.l{color:#f0867f}.histRow .res.d{color:var(--muted)}
+.histRow .res.w{color:var(--good)}.histRow .res.l{color:var(--warn)}.histRow .res.d{color:var(--muted)}
 .histRow .ra{grid-column:1/-1;display:flex;gap:6px;margin-top:4px}
 .histRow .ra button{padding:3px 9px;font-size:.76rem}
 .histEmpty{padding:14px;color:var(--muted);font:.88rem system-ui,sans-serif;text-align:center}
@@ -301,6 +304,69 @@ button.danger:hover{background:#d0605d}
 .set .acts{margin:6px 0}
 .customRow.four{grid-template-columns:1fr 1fr}
 button.small{padding:4px 10px;font-size:.8rem;margin-top:8px}
+/* ---------- look and feel ---------- */
+button,select,input[type=number]{transition:background .14s,border-color .14s,box-shadow .14s,transform .06s}
+button:active:not(:disabled){transform:translateY(1px)}
+.head h1{font-size:1.65rem}
+.iconBtn{display:grid;place-items:center;padding:0;width:34px;height:30px}
+.iconBtn svg,.chev{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.headBtns{gap:6px}
+.headBtns .iconBtn{width:32px;height:30px;padding:0}
+.btns{gap:6px}
+.btns button{padding:7px 10px;font-size:.88rem}
+.btns .iconBtn{flex:0 0 auto;width:38px;padding:0}
+.modeTabs{display:flex;gap:2px;padding:3px;background:var(--field);border-radius:9px}
+.modeTabs button{flex:1;padding:6px 0;border:0;background:none;color:var(--muted);font-size:.84rem;border-radius:7px}
+.modeTabs button:hover{background:none;color:var(--ink)}
+.modeTabs button.on{background:var(--btn);color:var(--ink);box-shadow:0 1px 3px #0003}
+.setupCard{display:none!important}
+body.mode-cpu .setupCard,body.mode-two .setupCard,body.mode-net .setupCard,body.mode-puz .setupCard{display:block!important}
+.setup{border:1px solid var(--line);border-radius:8px;background:var(--surface);overflow:hidden}
+.setupHead{display:flex;align-items:center;gap:8px;width:100%;padding:9px 12px;border:0;border-radius:0;background:none;text-align:left;font:600 .84rem system-ui,sans-serif}
+.setupHead:hover{background:var(--hover)}
+.setupHead .sum{flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-weight:400;font-size:.78rem;color:var(--muted)}
+.setupHead .chev{flex:none;transition:transform .2s}
+.setup.closed .chev{transform:rotate(-90deg)}
+.setup .opts{padding:2px 12px 12px}
+.setup.closed .opts{display:none}
+.oppOpt{display:none!important}
+body.mode-cpu .oppOpt,body.mode-two .oppOpt,body.mode-net .oppOpt{display:flex!important}
+.strip{gap:10px}
+.strip .nm{display:flex;align-items:center;gap:8px;font-size:1.02rem;white-space:nowrap}
+.strip .nm::before{content:"";flex:none;width:11px;height:11px;border-radius:50%;background:#f4f2ec;box-shadow:inset 0 0 0 1px #0007}
+.strip[data-c="b"] .nm::before{background:#23272e;box-shadow:inset 0 0 0 1px #fff5}
+.strip .cap{flex:1;min-width:0;display:flex;align-items:center;gap:6px;overflow:hidden;height:100%}
+.cap .grp{display:flex;align-items:center}
+.cap .grp .pc{width:18px;height:18px;font-size:15px;line-height:18px;filter:none}
+.cap .grp .pc.svg{background-size:100%}
+.cap .grp .pc.w{-webkit-text-stroke:.8px #1b1f26}
+.cap .grp .pc+.pc{margin-left:-9px}
+.cap .bk.svg{filter:drop-shadow(0 0 1px rgba(255,255,255,.95)) drop-shadow(0 0 1px rgba(255,255,255,.55))}
+html[data-theme="light"] .cap .bk.svg{filter:none}
+.cap .adv{font:600 .8rem system-ui,sans-serif;color:var(--muted);margin-left:2px}
+.sq.incheck{background-image:none}
+.sq.incheck::before{content:"";position:absolute;inset:0;background:radial-gradient(circle,var(--hl-check) 0,var(--hl-check2) 35%,var(--hl-check0) 75%);animation:checkPulse 1.5s ease-in-out infinite;pointer-events:none}
+@keyframes checkPulse{0%,100%{opacity:1}50%{opacity:.4}}
+#board.noanim .sq.incheck::before{animation:none}
+.sq.mine{cursor:grab}
+.sq.dot,.sq.cap,.sq.pdot{cursor:pointer}
+.pghost{opacity:.6}
+.modal{animation:mfade .14s ease-out}
+.modal .box{animation:mpop .18s ease-out}
+@keyframes mfade{from{opacity:0}to{opacity:1}}
+@keyframes mpop{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){*,*::before{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+#moves .row{border-radius:4px}
+#moves .row:nth-child(odd){background:rgba(127,127,127,.09)}
+#settings .box.set{height:min(88vh,680px);display:flex;flex-direction:column}
+.setTabs{display:flex;gap:2px;padding:3px;background:var(--field);border-radius:9px;margin:4px 0 6px}
+.setTabs button{flex:1;padding:6px 0;border:0;background:none;color:var(--muted);font-size:.85rem;border-radius:7px}
+.setTabs button:hover{background:none;color:var(--ink)}
+.setTabs button.on{background:var(--btn);color:var(--ink)}
+.setBody{flex:1;min-height:0;overflow:auto;padding-right:6px;margin-right:-6px}
+.setPane{display:none}
+.setPane.on{display:block}
+.setPane>h3:first-child{margin-top:8px}
 @media (max-width:960px){
   body.mode-ana{--bdmax:min(88vw, 70vh, 720px)}
   body.mode-ana .stage{margin-left:26px}
@@ -315,18 +381,26 @@ button.small{padding:4px 10px;font-size:.8rem;margin-top:8px}
 <body class="mode-cpu">
 <main class="app">
   <div class="stage">
-    <div class="strip" id="clockTop"><span class="nm"></span><span class="tm"></span></div>
+    <div class="strip" id="clockTop"><span class="nm"></span><span class="cap"></span><span class="tm"></span></div>
     <div class="boardWrap">
       <div class="evalbar" id="evalbar"><div class="evbW" id="evbW"></div><span class="evbT" id="evbT"></span></div>
       <div id="board" aria-label="Chess board"></div>
       <svg id="arrows" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
       <svg id="marks" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
     </div>
-    <div class="strip" id="clockBot"><span class="nm"></span><span class="tm"></span></div>
+    <div class="strip" id="clockBot"><span class="nm"></span><span class="cap"></span><span class="tm"></span></div>
   </div>
   <aside class="panel" id="panel">
     <button id="drawerBtn" class="drawerHandle" aria-expanded="false" aria-controls="panel"><span class="grip"></span><span id="drawerStatus">Chess</span></button>
-    <div class="head"><h1>Chess</h1><div class="headBtns"><button id="focusBtn" title="Hide everything except the board (Z)">Focus</button><button id="statsBtn">Stats</button><button id="setBtn" aria-haspopup="dialog">Settings</button></div></div>
+    <div class="head"><h1>Chess</h1><div class="headBtns">
+      <button id="flipBtn" class="iconBtn" title="Flip board (F)" aria-label="Flip board"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4v14M4 14l4 4 4-4"/><path d="M16 20V6M12 10l4-4 4 4"/></svg></button>
+      <button id="focusBtn" class="iconBtn" title="Focus mode: hide everything but the board (Z)" aria-label="Focus mode"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+      <button id="statsBtn" class="iconBtn" title="Stats and history" aria-label="Stats and history"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V11M12 20V5M19 20v-6"/></svg></button>
+      <button id="setBtn" class="iconBtn" title="Settings" aria-label="Settings" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg></button>
+    </div></div>
+    <div class="modeTabs" id="modeTabs" role="tablist" aria-label="Mode">
+      <button data-m="play" role="tab">Play</button><button data-m="puz" role="tab">Puzzles</button><button data-m="ana" role="tab">Analysis</button>
+    </div>
     <div id="status" role="status" aria-live="polite"></div>
     <div id="anaTop" class="anaBlock">
       <div class="engBox">
@@ -356,10 +430,13 @@ button.small{padding:4px 10px;font-size:.8rem;margin-top:8px}
         <button id="boardResetBtn">New board</button>
       </div>
     </div>
-    <div class="opts">
-      <label class="wide">Mode
-        <select id="mode"><option value="cpu">Computer</option><option value="two">Two players, one screen</option><option value="net">Online friend</option><option value="puz">Puzzles</option><option value="ana">Analysis board</option></select>
-      </label>
+    <select id="mode" hidden aria-hidden="true" tabindex="-1"><option value="cpu">Computer</option><option value="two">Two players, one screen</option><option value="net">Online friend</option><option value="puz">Puzzles</option><option value="ana">Analysis board</option></select>
+    <div class="setup setupCard" id="setupCard">
+      <button class="setupHead" id="setupToggle" aria-expanded="true"><span id="setupTitle">Game setup</span><span class="sum" id="setupSum"></span><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+      <div class="opts" id="setupBody">
+        <label class="oppOpt wide">Opponent
+          <select id="opp"><option value="cpu">Computer</option><option value="two">Two players, one screen</option><option value="net">Online friend</option></select>
+        </label>
       <label class="tcOpt wide">Time control
         <select id="tc">
           <option value="0|0" selected>Unlimited</option>
@@ -389,6 +466,7 @@ button.small{padding:4px 10px;font-size:.8rem;margin-top:8px}
       <label class="cpuOnly">Strength
         <select id="level"><option value="0">Casual</option><option value="1" selected>Club</option><option value="2">Strong</option></select>
       </label>
+      </div>
     </div>
     <div id="puzWrap" class="puzOnly"></div>
     <div class="net netOnly">
@@ -402,14 +480,13 @@ button.small{padding:4px 10px;font-size:.8rem;margin-top:8px}
     </div>
     <div class="btns">
       <button id="newBtn" class="primary">New game</button>
-      <button id="undoBtn">Undo</button>
+      <button id="undoBtn" class="iconBtn" title="Undo" aria-label="Undo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button>
       <button id="drawBtn" class="netBtn">Draw</button>
       <button id="tbBtn" class="netBtn">Takeback</button>
       <button id="resignBtn" class="resignBtn">Resign</button>
       <button id="hintBtn" class="puzBtn">Hint</button>
       <button id="solveBtn" class="puzBtn">Solution</button>
       <button id="anaBtn" class="playBtn">Analyze</button>
-      <button id="flipBtn">Flip</button>
     </div>
     <p class="tip">Click a piece, then a highlighted square. You can also drag.</p>
   </aside>
@@ -420,6 +497,13 @@ button.small{padding:4px 10px;font-size:.8rem;margin-top:8px}
 <div id="settings" class="modal" hidden>
   <div class="box set" role="dialog" aria-label="Settings">
     <div class="setHead"><h2>Settings</h2><button id="setClose" class="primary">Done</button></div>
+    <div class="setTabs" id="setTabs" role="tablist">
+      <button class="on" data-pane="appearance" role="tab">Appearance</button><button data-pane="gameplay" role="tab">Gameplay</button><button data-pane="layout" role="tab">Layout</button>
+    </div>
+    <div class="setBody">
+      <div class="setPane on" data-pane="appearance">
+        <h3>Interface theme</h3>
+        <div class="selRow"><label>Theme <select id="optTheme"><option value="dark">Dark</option><option value="light">Light</option><option value="match">Match my board colors</option></select></label></div>
     <h3>Board colors</h3>
     <div id="boardThemes" class="swatches"></div>
     <div class="customRow">
@@ -436,28 +520,36 @@ button.small{padding:4px 10px;font-size:.8rem;margin-top:8px}
       <label>Premove <input type="color" id="cHlPre" value="#4a90d9"></label>
     </div>
     <button id="hlReset" class="small">Reset highlights</button>
-    <h3>Gameplay</h3>
-    <div class="selRow">
-      <label>Piece animation <select id="optAnim"><option value="off">Off</option><option value="fast">Fast</option><option value="normal">Normal</option><option value="slow">Slow</option></select></label>
-      <label>Move input <select id="optInput"><option value="both">Click or drag</option><option value="click">Click only</option><option value="drag">Drag only</option></select></label>
-      <label>Legal move hints <select id="optHint"><option value="dots">Dots</option><option value="ring">Rings</option><option value="tint">Tinted squares</option></select></label>
+        <h3>Display</h3>
+        <label class="chk"><input type="checkbox" id="optCoords"> Show coordinates</label>
+        <p class="credit">Piece artwork from Lichess: Standard by Colin M.L. Burnett (GPLv2+), Merida by Armando Hernandez Marroquin (GPLv2+), Chessnut by Alexis Luengas (Apache 2.0), Alpha by Eric Bentzen (free for personal, non-commercial use).</p>
+      </div>
+      <div class="setPane" data-pane="gameplay">
+        <h3>Moving pieces</h3>
+        <div class="selRow">
+          <label>Piece animation <select id="optAnim"><option value="off">Off</option><option value="fast">Fast</option><option value="normal">Normal</option><option value="slow">Slow</option></select></label>
+          <label>Move input <select id="optInput"><option value="both">Click or drag</option><option value="click">Click only</option><option value="drag">Drag only</option></select></label>
+          <label>Legal move hints <select id="optHint"><option value="dots">Dots</option><option value="ring">Rings</option><option value="tint">Tinted squares</option></select></label>
+        </div>
+        <label class="chk"><input type="checkbox" id="optHints"> Show legal move hints</label>
+        <label class="chk"><input type="checkbox" id="optAutoQ"> Always promote to a queen</label>
+        <label class="chk"><input type="checkbox" id="optPre"> Premoves (queue several moves while it is not your turn)</label>
+        <label class="chk"><input type="checkbox" id="optMarks"> Right-click to draw arrows and circles</label>
+        <label class="chk"><input type="checkbox" id="optGo"> Show a pop-up when a game ends</label>
+      </div>
+      <div class="setPane" data-pane="layout">
+        <h3>Board</h3>
+        <label class="rng">Board size <input type="range" id="optSize" min="50" max="100" step="1"><span id="sizeVal"></span></label>
+        <h3>Focus and full screen</h3>
+        <div class="acts"><button id="focusBtn2">Focus mode</button><button id="fsBtn">Full screen</button></div>
+        <label class="chk"><input type="checkbox" id="optClk"> Keep clocks visible in focus mode</label>
+        <label class="chk"><input type="checkbox" id="optDim"> Dim the page in focus mode</label>
+        <h3>Small screens</h3>
+        <label class="chk"><input type="checkbox" id="optDrawer"> Slide-up panel on small screens</label>
+        <p class="tip">Keys: Z focus mode, F flip the board, arrow keys step through an analysis. Right-drag draws an arrow (Shift red, Ctrl blue, Alt yellow). Esc cancels premoves.</p>
+        <div class="acts"><button id="setReset">Reset all settings</button></div>
+      </div>
     </div>
-    <label class="chk"><input type="checkbox" id="optAutoQ"> Always promote to a queen</label>
-    <label class="chk"><input type="checkbox" id="optPre"> Premoves (queue a move while it is not your turn)</label>
-    <label class="chk"><input type="checkbox" id="optMarks"> Right-click to draw arrows and circles</label>
-    <label class="chk"><input type="checkbox" id="optGo"> Show a pop-up when a game ends</label>
-    <h3>Layout</h3>
-    <label class="rng">Board size <input type="range" id="optSize" min="50" max="100" step="1"><span id="sizeVal"></span></label>
-    <div class="acts"><button id="focusBtn2">Focus mode</button><button id="fsBtn">Full screen</button></div>
-    <label class="chk"><input type="checkbox" id="optClk"> Keep clocks visible in focus mode</label>
-    <label class="chk"><input type="checkbox" id="optDim"> Dim the page in focus mode</label>
-    <label class="chk"><input type="checkbox" id="optDrawer"> Slide-up panel on small screens</label>
-    <h3>Display</h3>
-    <label class="chk"><input type="checkbox" id="optCoords"> Show coordinates</label>
-    <label class="chk"><input type="checkbox" id="optHints"> Show legal move hints</label>
-    <p class="tip">Keys: Z focus mode, F flip the board, arrow keys step through an analysis. Right-drag draws an arrow (Shift red, Ctrl blue, Alt yellow).</p>
-    <div class="acts"><button id="setReset">Reset all settings</button></div>
-    <p class="credit">Piece artwork from Lichess: Standard by Colin M.L. Burnett (GPLv2+), Merida by Armando Hernandez Marroquin (GPLv2+), Chessnut by Alexis Luengas (Apache 2.0), Alpha by Eric Bentzen (free for personal, non-commercial use).</p>
   </div>
 </div>
 
@@ -1084,9 +1176,9 @@ let mode = 'cpu', human = 'w', over = false, busy = false, gen = 0, drag = null;
 const DEFAULTS = {board:'slate', light:'#e1e4da', dark:'#6d8298', pieces:'cburnett', coords:true, hints:true,
   boardSize:100, focusClocks:true, focusDim:true, drawer:true,
   anim:'normal', hintStyle:'dots', autoQueen:false, input:'both', premove:true, marks:true, goCard:true,
-  hlLast:'#e3a83b', hlSel:'#e3a83b', hlCheck:'#d9534f', hlPre:'#4a90d9'};
+  hlLast:'#e3a83b', hlSel:'#e3a83b', hlCheck:'#d9534f', hlPre:'#4a90d9', theme:'dark'};
 let S = Object.assign({}, DEFAULTS);
-let premove = null, noAnim = false, animMove = null, goDone = false, gameSeq = 0, booting = true, focusOn = false;
+let premoves = [], noAnim = false, animMove = null, goDone = false, gameSeq = 0, booting = true, focusOn = false;
 let net = null, netReady = false, result = null, wantRe = false, oppRe = false, netNote = '';
 const newBtn = $('newBtn'), netInfo = $('netInfo'), codeIn = $('codeIn');
 
@@ -1143,7 +1235,7 @@ const pickSide = () => sideSel.value === 'r' ? (Math.random() < .5 ? 'w' : 'b') 
 
 function resetBoard(){
   gen++; busy = false; result = null; ckInit();
-  gameSeq++; goDone = false; premove = null; clearMarks();
+  gameSeq++; goDone = false; premoves = []; clearMarks();
   cur = initial(); log = []; keys = [posKey(cur)]; lastMove = null; sel = null;
   flipped = (mode === 'cpu' || mode === 'net') && human === 'b';
   legalMoves = genLegal(cur);
@@ -1158,7 +1250,7 @@ function newGame(){
   human = pickSide(); tc = readTC();
   lastUI = {side:sideSel.value};
   if (!booting) lsDel(SAVE_GAME);
-  premove = null; clearMarks(); gameSeq++;
+  premoves = []; clearMarks(); gameSeq++;
   newBtn.textContent = mode === 'net' ? 'Rematch' : mode === 'puz' ? 'Next puzzle' : 'New game';
   if (mode === 'puz'){ nextPuzzle(); return; }
   if (mode === 'ana'){ anaStart(null); return; }
@@ -1200,7 +1292,7 @@ function computeStatus(){
 }
 
 const ANIM_MS = {off:0, fast:110, normal:200, slow:360};
-const pmSel = () => sel !== null && !!cur.b[sel] && colorOf(cur.b[sel]) !== cur.turn;
+const pmSel = () => { if (sel === null) return false; const b = premoves.length ? virtualBoard() : cur.b; return !!b[sel] && colorOf(b[sel]) !== cur.turn; };
 
 function runAnim(am){
   const ms = ANIM_MS[S.anim];
@@ -1247,19 +1339,27 @@ function render(){
     hs.add(uciSq(u, 0)); if (puz.hint > 1) hs.add(uciSq(u, 2));
   }
   const chkSq = (!over || legalMoves.length === 0) && inCheck(cur) ? kingSq(cur.b, cur.turn) : -1;
+  const vb = premoves.length ? virtualBoard() : cur.b, pmSet = new Set();
+  for (const q of premoves){ pmSet.add(q.from); pmSet.add(q.to); }
+  const canMove = !busy && !over && humanTurn(), prem = !canMove && premoveOK();
   for (let vr = 0; vr < 8; vr++) for (let vc = 0; vc < 8; vc++){
     const r = flipped ? 7 - vr : vr, c = flipped ? 7 - vc : vc, i = r*8 + c;
     const d = document.createElement('div');
     d.className = 'sq ' + ((r + c) % 2 === 0 ? 'lt' : 'dk');
     d.dataset.i = i;
     if (lastMove && (i === lastMove.from || i === lastMove.to)) d.classList.add('last');
-    if (premove && (i === premove.from || i === premove.to)) d.classList.add('pre');
+    if (pmSet.has(i)) d.classList.add('pre');
     if (hs.has(i)) d.classList.add('hint');
     if (sel === i) d.classList.add('sel');
-    if (i === chkSq) d.classList.add('chk');
-    const p = cur.b[i];
-    if (S.hints && targets.has(i)) d.classList.add(pm ? 'pdot' : (p || targets.get(i).ep ? 'cap' : 'dot'));
-    if (p) d.appendChild(pieceEl(p));
+    if (i === chkSq) d.classList.add('incheck');
+    const p = vb[i];
+    if (S.hints && targets.has(i)) d.classList.add(pm ? 'pdot' : (cur.b[i] || targets.get(i).ep ? 'cap' : 'dot'));
+    if (p){
+      const pe = pieceEl(p);
+      if (vb !== cur.b && p !== cur.b[i]) pe.classList.add('pghost');
+      d.appendChild(pe);
+      if ((canMove && colorOf(p) === cur.turn) || (prem && colorOf(p) === human)) d.classList.add('mine');
+    }
     if (vc === 0){ const o = document.createElement('span'); o.className = 'co r'; o.textContent = 8 - r; d.appendChild(o); }
     if (vr === 7){ const o = document.createElement('span'); o.className = 'co f'; o.textContent = FILES[c]; d.appendChild(o); }
     boardEl.appendChild(d);
@@ -1297,7 +1397,7 @@ function update(){
   computeStatus();
   if (over) ckStop();
   $('undoBtn').disabled = !!ck;
-  $('undoBtn').title = ck ? 'Undo is off in timed games' : '';
+  $('undoBtn').title = ck ? 'Undo is off in timed games' : 'Undo';
   render();
   if (mode === 'ana' && AN) renderAna();
   else {
@@ -1312,7 +1412,8 @@ function update(){
   const live = mode === 'net' && netReady && !over;
   $('drawBtn').disabled = $('tbBtn').disabled = !live;
   $('drawerStatus').textContent = statusEl.textContent || 'Chess';
-  syncLayout();
+  syncLayout(); syncModeUI();
+  if (over && premoves.length) premoves = [];
   if (over && !goDone && playMode() && log.length >= 1) onGameEnd();
 }
 
@@ -1341,7 +1442,7 @@ function doMove(m, remote, forced, remoteMs){
   clearMarks();
   incomingClose(!remote);
   if (remote) offerOut = null;
-  if (mover === human) premove = null;
+  if (mover === human && !premoveRun) premoves = [];
   ckMoved(mover, remote, remoteMs);
   if (mode === 'net' && !remote && net && net.conn && net.conn.open)
     net.conn.send({t:'move', n, from:m.from, to:m.to, promo:m.promo || '', ms: ck ? Math.round(ck[mover]) : 0});
@@ -1372,7 +1473,7 @@ function maybeComputer(){
 
 function undo(){
   if (busy || !log.length || mode === 'net' || mode === 'puz' || ck) return;
-  gen++; premove = null; clearMarks();
+  gen++; premoves = []; clearMarks();
   const pop = () => { const e = log.pop(); cur = e.prev; lastMove = e.lastBefore; keys.pop(); };
   pop();
   if (mode === 'cpu' && cur.turn !== human && log.length) pop();
@@ -1420,6 +1521,46 @@ function setTCUI(t){
 }
 function lockTC(on){ tcSel.disabled = tcMin.disabled = tcInc.disabled = on; }
 
+const PVAL = {p:1, n:3, b:3, r:5, q:9};
+function materialInfo(){
+  const base = (mode === 'ana' && AN) ? AN.root.st : initial();
+  const count = (b, col) => {
+    const o = {p:0, n:0, b:0, r:0, q:0};
+    for (const ch of b) if (ch && colorOf(ch) === col && ch.toLowerCase() !== 'k') o[ch.toLowerCase()]++;
+    return o;
+  };
+  const res = {};
+  for (const col of ['w', 'b']){
+    const b0 = count(base.b, col), c1 = count(cur.b, col);
+    let promos = 0;
+    for (const t of 'nbrq') promos += Math.max(0, c1[t] - b0[t]);
+    const lost = [];
+    for (const t of 'qrbnp'){
+      let n = Math.max(0, b0[t] - c1[t]);
+      if (t === 'p') n = Math.max(0, b0.p - c1.p - promos);
+      for (let i = 0; i < n; i++) lost.push(t);
+    }
+    res[col] = {lost, mat: Object.keys(c1).reduce((a, t) => a + c1[t] * PVAL[t], 0)};
+  }
+  return res;
+}
+function capsFor(el, c, info){
+  const opp = c === 'w' ? 'b' : 'w';
+  const lost = info[opp].lost, adv = info[c].mat - info[opp].mat;
+  const cap = el.querySelector('.cap');
+  const sig = c + '|' + S.pieces + '|' + lost.join('') + '|' + adv;
+  if (cap.dataset.sig === sig) return;
+  cap.dataset.sig = sig;
+  cap.innerHTML = '';
+  const groups = {};
+  for (const t of lost) (groups[t] = groups[t] || []).push(t);
+  for (const t of 'qrbnp') if (groups[t]){
+    const g = document.createElement('span'); g.className = 'grp';
+    for (const x of groups[t]){ const pe = pieceEl(opp === 'w' ? x.toUpperCase() : x); pe.classList.add(opp === 'b' ? 'bk' : 'wk'); g.appendChild(pe); }
+    cap.appendChild(g);
+  }
+  if (adv > 0){ const a = document.createElement('span'); a.className = 'adv'; a.textContent = '+' + adv; cap.appendChild(a); }
+}
 function ckInit(){
   if (mode === 'puz' || !tc.min){ ck = null; return; }
   const ms = tc.min * 60000;
@@ -1480,12 +1621,15 @@ function nameOf(c){
 function renderClocks(){
   if (!cur) return;
   const topC = flipped ? 'w' : 'b', botC = flipped ? 'b' : 'w';
+  const info = mode !== 'puz' ? materialInfo() : null;
   for (const [el, c] of [[clockTop, topC], [clockBot, botC]]){
-    const nm = el.children[0], tm = el.children[1];
+    const nm = el.querySelector('.nm'), tm = el.querySelector('.tm');
+    el.dataset.c = c;
     const name = nameOf(c);
     if (nm.textContent !== name) nm.textContent = name;
     const t = ck ? fmtClock(ckRemain(c)) : '';
     if (tm.textContent !== t) tm.textContent = t;
+    if (mode !== 'puz') capsFor(el, c, info);
     el.classList.toggle('turn', !over && mode !== 'puz' && cur.turn === c);
     el.classList.toggle('run', !!ck && ck.side === c);
     el.classList.toggle('low', !!ck && ckRemain(c) < 10000);
@@ -1540,6 +1684,42 @@ function themeColors(){
   const t = BOARD_THEMES.find(x => x[0] === S.board) || BOARD_THEMES[0];
   return [t[2], t[3]];
 }
+// ----- interface themes -----
+const THEMES = {
+  dark:{bg:'#1f252d', bgd:'#0f1318', panel:'#29303a', line:'#3b4552', ink:'#ece9e2', muted:'#9ba6b2', field:'#1b2027', surface:'#252c35',
+        btn:'#343d49', 'btn-hover':'#3d4755', card:'#303844', 'card-on':'#3a4452', hover:'#3b4552', toast:'#323b47',
+        warn:'#f0867f', good:'#7bc88f', 'acc-text':'#e3a83b', 'c-inacc':'#f1c45b', 'c-mistake':'#f0924a', 'c-blunder':'#f0605d', scheme:'dark'},
+  light:{bg:'#e6e3dc', bgd:'#c9c5ba', panel:'#f6f4ef', line:'#d2cec3', ink:'#22262d', muted:'#667080', field:'#ffffff', surface:'#eeebe4',
+         btn:'#e3dfd5', 'btn-hover':'#d8d4c8', card:'#e8e4db', 'card-on':'#ddd8cb', hover:'#dedacf', toast:'#ffffff',
+         warn:'#c0392b', good:'#2e8b57', 'acc-text':'#9a6a0b', 'c-inacc':'#a87a06', 'c-mistake':'#c4601a', 'c-blunder':'#c0392b', scheme:'light'}
+};
+function hslOf(hex){
+  const n = parseInt(hex.slice(1), 16), r = ((n >> 16) & 255) / 255, g = ((n >> 8) & 255) / 255, b = (n & 255) / 255;
+  const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, d = mx - mn;
+  let h = 0, s = 0;
+  if (d){
+    s = d / (1 - Math.abs(2 * l - 1));
+    h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
+    h = (h * 60 + 360) % 360;
+  }
+  return [Math.round(h), s * 100, l * 100];
+}
+function matchTheme(){
+  const [h, s] = hslOf(themeColors()[1]);
+  const sat = Math.max(9, Math.min(30, s * .5));
+  const c = (l, sa) => `hsl(${h}, ${Math.round(sa == null ? sat : sa)}%, ${l}%)`;
+  return Object.assign({}, THEMES.dark, {
+    bg:c(12), bgd:c(7), panel:c(17), line:c(27), muted:c(68, Math.min(sat, 14)), field:c(9.5), surface:c(14.5),
+    btn:c(23), 'btn-hover':c(28), card:c(21), 'card-on':c(26), hover:c(26), toast:c(22)
+  });
+}
+function applyTheme(){
+  const t = S.theme === 'light' ? THEMES.light : S.theme === 'match' ? matchTheme() : THEMES.dark;
+  const root = document.documentElement;
+  for (const k of Object.keys(t)) if (k !== 'scheme') root.style.setProperty('--' + k, t[k]);
+  root.style.colorScheme = t.scheme;
+  root.dataset.theme = S.theme;
+}
 const HEX = /^#[0-9a-f]{6}$/i;
 function saveSettings(){ lsSet(SAVE_KEY, S); }
 function loadSettings(){
@@ -1552,10 +1732,12 @@ function loadSettings(){
   if (['off', 'fast', 'normal', 'slow'].includes(v.anim)) S.anim = v.anim;
   if (['dots', 'ring', 'tint'].includes(v.hintStyle)) S.hintStyle = v.hintStyle;
   if (['both', 'click', 'drag'].includes(v.input)) S.input = v.input;
+  if (['dark', 'light', 'match'].includes(v.theme)) S.theme = v.theme;
   if (Number.isFinite(+v.boardSize)) S.boardSize = Math.min(100, Math.max(50, Math.round(+v.boardSize)));
 }
 const rgba = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`; };
 function applySettings(){
+  applyTheme();
   const root = document.documentElement, [l, d] = themeColors();
   root.style.setProperty('--light', l); root.style.setProperty('--dark', d);
   root.style.setProperty('--bscale', S.boardSize / 100);
@@ -1565,6 +1747,7 @@ function applySettings(){
   root.style.setProperty('--hl-pre', rgba(S.hlPre, .55)); root.style.setProperty('--hl-pre-solid', S.hlPre);
   root.classList.toggle('nodrawer', !S.drawer); root.classList.toggle('dim', S.focusDim);
   boardEl.classList.toggle('nocoords', !S.coords);
+  boardEl.classList.toggle('noanim', S.anim === 'off');
   for (const h of ['dots', 'ring', 'tint']) boardEl.classList.toggle('hs-' + h, S.hintStyle === h);
   saveSettings();
   if (cur){ render(); syncLayout(); }
@@ -1612,7 +1795,7 @@ settingsEl.addEventListener('click', e => { if (e.target === settingsEl) closeSe
 window.addEventListener('keydown', e => { if (e.key === 'Escape'){ closeSettings(); promoEl.hidden = true; } });
 cLight.addEventListener('input', () => { S.board = 'custom'; S.light = cLight.value; S.dark = cDark.value; applySettings(); });
 cDark.addEventListener('input', () => { S.board = 'custom'; S.light = cLight.value; S.dark = cDark.value; applySettings(); });
-const BIND = [['optAnim', 'anim', 'v'], ['optInput', 'input', 'v'], ['optHint', 'hintStyle', 'v'], ['optAutoQ', 'autoQueen', 'c'],
+const BIND = [['optTheme', 'theme', 'v'], ['optAnim', 'anim', 'v'], ['optInput', 'input', 'v'], ['optHint', 'hintStyle', 'v'], ['optAutoQ', 'autoQueen', 'c'],
   ['optPre', 'premove', 'c'], ['optMarks', 'marks', 'c'], ['optGo', 'goCard', 'c'], ['optClk', 'focusClocks', 'c'],
   ['optDim', 'focusDim', 'c'], ['optDrawer', 'drawer', 'c'], ['optCoords', 'coords', 'c'], ['optHints', 'hints', 'c']];
 const HL_INPUTS = [['cHlLast', 'hlLast'], ['cHlSel', 'hlSel'], ['cHlCheck', 'hlCheck'], ['cHlPre', 'hlPre']];
@@ -1622,6 +1805,12 @@ for (const [id, key, t] of BIND){
 }
 for (const [id, key] of HL_INPUTS) $(id).addEventListener('input', e => { S[key] = e.target.value; applySettings(); });
 $('optSize').addEventListener('input', e => { S.boardSize = +e.target.value; applySettings(); });
+$('setTabs').addEventListener('click', e => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  document.querySelectorAll('#setTabs button').forEach(x => x.classList.toggle('on', x === b));
+  document.querySelectorAll('.setPane').forEach(x => x.classList.toggle('on', x.dataset.pane === b.dataset.pane));
+});
 $('hlReset').onclick = () => { for (const [, key] of HL_INPUTS) S[key] = DEFAULTS[key]; applySettings(); toast('Highlight colors reset.'); };
 $('setReset').onclick = () => confirmDialog({title:'Reset all settings?', text:'Board colors, pieces, layout and gameplay options go back to their defaults.', ok:'Reset', danger:true})
   .then(ok => { if (ok){ Object.assign(S, DEFAULTS); applySettings(); toast('Settings reset.'); } });
@@ -1690,7 +1879,7 @@ function markDown(e){
   if (i === null) return;
   e.preventDefault();
   markStart = {i, color:markColor(e)};
-  if (premove){ premove = null; sel = null; render(); }
+  if (premoves.length){ premoves = []; sel = null; render(); }
 }
 function markUp(e){
   if (!markStart) return;
@@ -1710,38 +1899,59 @@ function markUp(e){
   drawMarks();
 }
 
-// premoves: queue one move while it is not your turn (computer and online games)
+// premoves: queue several moves while it is not your turn (computer and online games)
+let premoveRun = false;
+function virtualBoard(){
+  const b = cur.b.slice();
+  for (const pm of premoves){
+    const p = b[pm.from];
+    if (!p) continue;
+    const dest = pm.promo ? (human === 'w' ? pm.promo.toUpperCase() : pm.promo) : p;
+    if (p.toUpperCase() === 'K' && Math.abs(pm.to - pm.from) === 2){
+      const k = pm.to > pm.from, rf = k ? pm.to + 1 : pm.to - 2, rt = k ? pm.to - 1 : pm.to + 1;
+      b[rt] = b[rf]; b[rf] = '';
+    }
+    if (p.toUpperCase() === 'P' && (pm.from & 7) !== (pm.to & 7) && !b[pm.to]) b[(pm.from >> 3) * 8 + (pm.to & 7)] = '';
+    b[pm.to] = dest; b[pm.from] = '';
+  }
+  return b;
+}
 function premoveOK(){
   return S.premove && !over && !result && (mode === 'cpu' || (mode === 'net' && netReady)) && cur.turn !== human;
 }
 function premoveTargets(from){
-  const p = cur.b[from];
+  const vb = premoves.length ? virtualBoard() : cur.b;
+  const p = vb[from];
   if (!p || colorOf(p) !== human) return [];
-  return genPseudo({b:cur.b, turn:human, c:cur.c, ep:-1, half:0, full:cur.full}).filter(m => m.from === from);
+  return genPseudo({b:vb, turn:human, c:cur.c, ep:-1, half:0, full:cur.full}).filter(m => m.from === from);
 }
 function setPremove(from, to){
   const m = premoveTargets(from).find(x => x.to === to);
-  if (!m) return;
-  premove = {from, to, promo: m.promo ? 'q' : ''};
+  if (!m || premoves.length >= 8) return;
+  premoves.push({from, to, promo: m.promo ? 'q' : ''});
   sel = null; render();
 }
 function premoveDown(e, i){
   if (!premoveOK()) return;
   e.preventDefault();
   if (sel !== null && pmSel() && S.input !== 'drag' && premoveTargets(sel).some(m => m.to === i)){ setPremove(sel, i); return; }
-  const p = cur.b[i];
+  const vb = premoves.length ? virtualBoard() : cur.b, p = vb[i];
   if (p && colorOf(p) === human){
     const was = sel === i;
     sel = i; render();
     if (S.input === 'click'){ if (was){ sel = null; render(); } return; }
     startDrag(e, i, was, true);
-  } else { sel = null; premove = null; render(); }
+  } else {
+    if (sel === null) premoves = [];
+    sel = null; render();
+  }
 }
 function tryPremove(){
-  if (!premove || over || !humanTurn()) return;
-  const pm = premove; premove = null;
+  if (!premoves.length || over || !humanTurn()) return;
+  const pm = premoves.shift();
   const m = legalMoves.find(x => x.from === pm.from && x.to === pm.to && (x.promo || '') === pm.promo);
-  if (m) doMove(m); else render();
+  if (m){ premoveRun = true; try { doMove(m); } finally { premoveRun = false; } }
+  else { premoves = []; render(); }
 }
 
 boardEl.addEventListener('contextmenu', e => e.preventDefault());
@@ -1756,7 +1966,7 @@ boardEl.addEventListener('pointerdown', e => {
   const i = +sqEl.dataset.i;
   if (busy || over || !humanTurn()) return premoveDown(e, i);
   e.preventDefault();
-  premove = null;
+  premoves = [];
   if (sel !== null && S.input !== 'drag'){
     const ms = legalMoves.filter(m => m.from === sel && m.to === i);
     if (ms.length) return attempt(ms);
@@ -1953,7 +2163,7 @@ function anaStart(src){
   if (src.moves){ let n = AN.root; for (const m of src.moves) n = addChild(n, m); }
   flipped = !!src.flipped;
   gen++; busy = false; result = null; ck = null; puz = null;
-  premove = null; clearMarks(); gameSeq++;
+  premoves = []; clearMarks(); gameSeq++;
   anaGo(AN.root);
 }
 function anaGo(node){
@@ -2084,7 +2294,7 @@ function setBar(ev){
   evbW.style.height = w + '%';
   evalbar.classList.toggle('flip', flipped);
   const whiteLeads = w >= 50;
-  evbT.textContent = ev ? fmtEval(ev) : '';
+  evbT.textContent = !ev ? '' : (ev.label || ev.mate != null) ? fmtEval(ev) : ((ev.cp > 0 ? '+' : '') + (ev.cp / 100).toFixed(1));
   evbT.style.top = evbT.style.bottom = '';
   if (whiteLeads !== flipped) evbT.style.bottom = '0'; else evbT.style.top = '0';
   evbT.style.color = whiteLeads ? '#22262d' : '#ece9e2';
@@ -2528,6 +2738,7 @@ window.addEventListener('keydown', e => {
   if (e.ctrlKey || e.metaKey || e.altKey) return;
   if (e.key === 'Escape'){
     if (cfmAbort){ cfmAbort(); return; }
+    if (premoves.length && !anyModalOpen()){ premoves = []; sel = null; render(); return; }
     if (!goDlg.hidden){ goDlg.hidden = true; return; }
     if (!histDlg.hidden){ histDlg.hidden = true; return; }
     if (focusOn && !anyModalOpen()) setFocus(false);
@@ -2718,7 +2929,7 @@ function resumeGame(sv){
     if (!m) break;
     pushMove(m);
   }
-  gen++; animMove = null; premove = null;
+  gen++; animMove = null; premoves = [];
   if (ck && sv.ck){ ck.w = sv.ck.w; ck.b = sv.ck.b; }
   update();
   if (ck && log.length){ ck.side = cur.turn; ck.t = performance.now(); ck.grace = 0; }
@@ -2753,7 +2964,7 @@ function undoPlies(k){
   if (log.length < k) return false;
   let snap = null;
   for (let j = 0; j < k; j++){ const e = log.pop(); cur = e.prev; lastMove = e.lastBefore; keys.pop(); snap = e.ck; }
-  sel = null; premove = null; clearMarks(); legalMoves = genLegal(cur);
+  sel = null; premoves = []; clearMarks(); legalMoves = genLegal(cur);
   if (ck && snap){ ck.w = snap.w; ck.b = snap.b; ck.side = log.length ? cur.turn : null; ck.t = performance.now(); ck.grace = 0; }
   gen++; animMove = null;
   update();
@@ -2789,6 +3000,39 @@ function netExtras(d){
 $('drawBtn').onclick = offerDraw;
 $('tbBtn').onclick = askTakeback;
 
+// ----- mode tabs and the collapsible setup card -----
+const PLAY_MODES = ['cpu', 'two', 'net'];
+const oppSel = $('opp'), UI_KEY = 'chessfile.ui';
+let lastPlay = 'cpu';
+const ui = Object.assign({setupOpen:true}, lsGet(UI_KEY, {}));
+function setupSummary(){
+  if (mode === 'puz') return diffSel.options[diffSel.selectedIndex].text.replace(/ \(.*\)/, '');
+  const parts = [{cpu:'Computer', two:'Two players', net:'Online'}[mode] || ''];
+  if (mode === 'cpu') parts.push(levelSel.options[levelSel.selectedIndex].text);
+  if (tc.min) parts.push(tcLabel(tc));
+  return parts.join(' \u00B7 ');
+}
+function syncModeUI(){
+  if (PLAY_MODES.includes(mode)) lastPlay = mode;
+  const tab = PLAY_MODES.includes(mode) ? 'play' : mode;
+  document.querySelectorAll('#modeTabs button').forEach(b => { const on = b.dataset.m === tab; b.classList.toggle('on', on); b.setAttribute('aria-selected', on ? 'true' : 'false'); });
+  if (PLAY_MODES.includes(mode)) oppSel.value = mode;
+  $('setupTitle').textContent = mode === 'puz' ? 'Puzzle setup' : 'Game setup';
+  $('setupSum').textContent = setupSummary();
+  $('setupCard').classList.toggle('closed', !ui.setupOpen);
+  $('setupToggle').setAttribute('aria-expanded', ui.setupOpen ? 'true' : 'false');
+}
+$('modeTabs').addEventListener('click', e => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  const target = b.dataset.m === 'play' ? lastPlay : b.dataset.m;
+  if (target === mode) return;
+  modeSel.value = target; modeSel.dispatchEvent(new Event('change'));
+});
+oppSel.addEventListener('change', () => { modeSel.value = oppSel.value; modeSel.dispatchEvent(new Event('change')); });
+$('setupToggle').onclick = () => { ui.setupOpen = !ui.setupOpen; lsSet(UI_KEY, ui); syncModeUI(); };
+for (const el of [levelSel, sideSel, diffSel, tcSel, tcMin, tcInc]) el.addEventListener('change', () => setTimeout(syncModeUI, 0));
+
 // ----- controls -----
 newBtn.onclick = () => mode === 'net' ? rematch() : mode === 'puz' ? nextPuzzle() : guard(newGame, null, 'Start a new game? The current one will be lost.');
 $('hintBtn').onclick = puzHint;
@@ -2803,7 +3047,7 @@ tcMin.onchange = tcChanged; tcInc.onchange = tcChanged;
 $('undoBtn').onclick = undo;
 $('flipBtn').onclick = flipBoard;
 $('resignBtn').onclick = () => confirmDialog({title:'Resign this game?', text:'Your opponent will be awarded the win.', ok:'Resign', danger:true}).then(ok => { if (ok) resign(); });
-modeSel.onchange = () => guard(newGame, () => { modeSel.value = mode; }, mode === 'net' ? 'Leaving will disconnect you from your opponent.' : undefined);
+modeSel.onchange = () => guard(newGame, () => { modeSel.value = mode; syncModeUI(); }, mode === 'net' ? 'Leaving will disconnect you from your opponent.' : undefined);
 sideSel.onchange = () => { if (mode !== 'net') guard(newGame, () => { sideSel.value = lastUI.side; }); };
 $('createBtn').onclick = createGame;
 $('joinBtn').onclick = () => joinGame(codeIn.value);
@@ -3035,7 +3279,7 @@ function nextPuzzle(){
 
 function loadPuzzle(p){
   gen++; busy = false; result = null; ck = null;
-  gameSeq++; premove = null; clearMarks();
+  gameSeq++; premoves = []; clearMarks();
   cur = fromFen(p.fen); log = []; keys = [posKey(cur)]; lastMove = null; sel = null;
   legalMoves = genLegal(cur);
   puz = {p, idx:0, solver: cur.turn === 'w' ? 'b' : 'w', done:false, tainted:false, rated:false, delta:null, misses:0, hint:0, busy:true, cls:'', msg:'Watch your opponent\u2019s move\u2026'};
